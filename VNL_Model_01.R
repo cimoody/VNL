@@ -44,7 +44,8 @@ data.labname <- paste(dDir, "di_lab_data_v1.1.csv", sep ="");
 # # Checking that goodlab is the same as data.lab without the "X" column
 # str(goodlab);
 # str(data.pop); # Returns the structure of data.lab
-# # Dropping column "X", "X.1" - appear to be all NA - and saving to a new data.frame named goodpop
+# # Dropping column "X", "X.1" - appear to be all NA - and saving to a new data.frame
+# # named goodpop
 # drops <- c("X", "X.1");
 # goodpop <- data.pop[,!(names(data.pop) %in% drops)];
 # # Checking that goodlab is the same as data.lab without the "X" column
@@ -56,6 +57,15 @@ data.labname <- paste(dDir, "di_lab_data_v1.1.csv", sep ="");
 
 list.files(path = "E:/VNL\ Data\ from\ Joe/", pattern = "\\.rda");
 load("E:/VNL\ Data\ from\ Joe/goodData.rda");
+
+# Figure out the top labs
+df$labNames = paste( df$lab_id, df$comp_id );
+topLabs = sort( table( df$labNames) ); #might need to play around with arguments to sort
+                        #because table() is going to return a wide vector and not a data frame
+topLabs = topLabs[,1:50];
+topLabs = topLabs[1,];   # should extract just the names of the labs you want
+# This should subset df according to whether a row contains a top-50 element
+df = df[ df$labNames %in% topLabs, ];
 
 
 
