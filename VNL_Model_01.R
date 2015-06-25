@@ -58,7 +58,31 @@ data.labname <- paste(dDir, "di_lab_data_v1.1.csv", sep ="");
 list.files(path = "E:/VNL\ Data\ from\ Joe/", pattern = "\\.rda");
 load("E:/VNL\ Data\ from\ Joe/goodData.rda");
 
-# Figure out the top labs
+# Figure out the top labs per patient
+# Make a variable that is a combination of ENC_CSN_ID, CPT_CODE, COMPONENT_ID
+# CPT_CODE & COMPONENT_ID are the lab
+labnames <- paste(goodlab$ENC_CSN_ID, goodlab$CPT_CODE, goodlab$COMPONENT_ID, sep = "_");
+# Use table to get the frequency of each combined patient & lab
+topLabs <- table(labnames);
+# Order these by frequency
+df <- topLabs;
+df <- df[order(df)];
+# Check that they are ordered by frequency
+plot(df);
+# Decide on a cut-off for rare labs
+#   >=          Number Available
+#    1          309808
+#    5           60487
+#   10           19639
+#   25            3256
+#   50             568
+dfNotRare <- df[df>=50];
+plot(dfNotRare);
+
+
+topLabs <- topLabs[,1:50]
+
+
 df$labNames = paste( df$lab_id, df$comp_id );
 topLabs = sort( table( df$labNames) ); #might need to play around with arguments to sort
                         #because table() is going to return a wide vector and not a data frame
