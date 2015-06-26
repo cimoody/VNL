@@ -18,16 +18,21 @@ wDir <- getwd();
 ## Data directory: E:/VNL Data from Joe
 dDir <- "E:/VNL\ Data\ from\ Joe/";
 ## Data filenames
-data.popname <- paste(dDir, "di_populations_v1.1.csv", sep ="");
-data.labname <- paste(dDir, "di_lab_data_v1.1.csv", sep ="");
+data.popname = sprintf("%s%s", dDir, "di_populations_v1.1.csv");
+data.labname = sprintf("%s%s", dDir, "di_lab_data_v1.1.csv");
+# ## sprintf() suggested for more control than paste() by D. Sanchez 6/25/15
+# data.popname <- paste(dDir, "di_populations_v1.1.csv", sep ="");
+# data.labname <- paste(dDir, "di_lab_data_v1.1.csv", sep ="");
 
 ### Don't need to repeat these steps every time
 # ## Reading the data into memory
-# data.pop <- read.csv(file = data.popname, header = TRUE);
-# data.lab <- read.csv(file = data.labname, header = TRUE);
+# ## D. Sanchez suggested always using stringsAsFactors = FALSE, because it gives
+# ## more flexibility in combining fields (as you will probably need to do).
+# data.pop <- read.csv(file = data.popname, header = TRUE, stringsAsFactors = FALSE);
+# data.lab <- read.csv(file = data.labname, header = TRUE, stringsAsFactors = FALSE);
 # ## Saving the data in R for manipulation
-# save(data.pop, file = paste(dDir, "dataPop.rda", sep=""));
-# save(data.lab, file = paste(dDir,"dataLab.rda", sep=""));
+# save(data.pop, file = sprintf("%s%s", dDir, "dataPop.rda"));
+# save(data.lab, file = sprintf("%s%s", dDir, "dataLab.rda"));
 # ## Listing all R processing data in directory
 # list.files(path = dDir, pattern = "\\.rda");
 # ## Loading R processing files to work wtih
@@ -39,6 +44,15 @@ data.labname <- paste(dDir, "di_lab_data_v1.1.csv", sep ="");
 # #  chck <- data.lab[,"X"]; # Creates vector of just the column to check
 # #  dc <- chck[!is.na(chck)]; # Creates a vector of any values in chck that are not NA
 # ## if dc returns 'logical(0)' to screen, then confirmed that column checked is all NA
+# ## Easier way to check for all-NA from D. Sanchez 6/25/15
+# # This exploits the fact that is.na returns a vector of booleans, and the typing system in R
+# # coerces bools to numerics upon arithmetic operations (TRUE casts to 1, FALSE to 0).  So even
+# # though the + 0 part is arithmetically pointless, it ensures that the bools are cast to ints so
+# # that sum collects them.  If everything is NA, then the sum is going to be equal to the length.
+# if( sum( is.na(data.lab$X) + 0 ) >= length( data.lab$X ) ) {
+#   print(" X is all NA\n");
+# } # from D. Sanchez
+#
 # drops <- c("X");
 # goodlab <- data.lab[,!(names(data.lab) %in% drops)];
 # # Checking that goodlab is the same as data.lab without the "X" column
@@ -72,27 +86,48 @@ plot(df);
 # Decide on a cut-off for rare labs
 #   >=          Number Available
 #    1          309808
+#    2          161320
+#    3          110570
+#    4           81226
 #    5           60487
 #   10           19639
+#   15            9189
+#   20            5272
 #   25            3256
+#   30            2080
+#   35            1446
+#   40            1117
+#   45             757
 #   50             568
-dfNotRare <- df[df>=50];
+cutoff <- 50;
+dfNotRare <- df[df>=cutoff];
 plot(dfNotRare);
 
-
-topLabs <- topLabs[,1:50]
-
-
-df$labNames = paste( df$lab_id, df$comp_id );
-topLabs = sort( table( df$labNames) ); #might need to play around with arguments to sort
-                        #because table() is going to return a wide vector and not a data frame
-topLabs = topLabs[,1:50];
-topLabs = topLabs[1,];   # should extract just the names of the labs you want
-# This should subset df according to whether a row contains a top-50 element
-df = df[ df$labNames %in% topLabs, ];
+# Notes from Dave in R snippet on how to find the top Labs:
+# # Figure out the top labs
+# df$labNames = paste( df$lab_id, df$comp_id );
+# topLabs = sort( table( df$labNames) ); # might need to play around with arguments to sort
+#                     # because table() is going to return a wide vector and not a data frame
+# topLabs = topLabs[,1:50];
+# topLabs = topLabs[1,];   # should extract just the names of the labs you want
+# # This should subset df according to whether a row contains a top-50 element
+# df = df[ df$labNames %in% topLabs, ];
 
 
-
+# Want to find an interesting place for a cut-off. Plotting
+coVal <- seq(1:100); # for x axis
+# Creating function for y(x). There is probably an easier way to do this.
+fun <- function(c){
+    xv <- length(df[df>=c])
+    return(xv);
+}
+patWlabs <- c(rep(0, 100));
+patWlabs <- lapply(coVal, fun); # for y axis
+# Creating plot and saving plot
+png("Patients_w_Repeated_Labs_20150626.png", width = 600, height = 500, units = "px");
+plot(coVal, patWlabs, xlab = "Minimum Repeated Labs per Patient", ylab = "Log(No. of Patients)",
+     xlim = c(1,100), panel.first = grid(), log = "y", col = "blue");
+dev.off();
 
 
 
