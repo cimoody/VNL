@@ -125,9 +125,38 @@ patWlabs <- c(rep(0, 100));
 patWlabs <- lapply(coVal, fun); # for y axis
 # Creating plot and saving plot
 png("Patients_w_Repeated_Labs_20150626.png", width = 600, height = 500, units = "px");
-plot(coVal, patWlabs, xlab = "Minimum Repeated Labs per Patient", ylab = "Log(No. of Patients)",
-     xlim = c(1,100), panel.first = grid(), log = "y", col = "blue");
+plot(coVal, patWlabs, xlab = "Minimum Repeated Labs per Patient",
+     ylab = "Log(No. of Patients)", xlim = c(1,100),
+     panel.first = grid(), log = "y", col = "blue");
 dev.off();
+graphics.off();
+
+# Determining which labs pass cutoff <= 50;
+# Accessing the row names in the table (since they are ID_lab)
+rn <- row.names(dfNotRare);
+rn <- strsplit(rn, "_"); # Splitting up the names into the components
+# Transposing the list rn
+lis <- rn;
+m <- do.call(rbind, lis);
+split(m, col(m));
+rn2 <- m;
+gt50tests <- data.frame(rn2); # Creating a data frame for ease of use
+# Combining the number of tests with the patient and lab information
+gt50tests <- cbind(gt50tests, dfNotRare);
+colnames(gt50tests) <- c("ENC_CSN_ID", "CPT_CODE", "COMPONENT_ID", "TIMES_TEST_REPEATED");
+gt50tests$CPT_ID_CODE = paste(gt50tests$CPT_CODE, gt50tests$COMPONENT_ID, sep = "_");
+# Finding which tests patients (determined by ENC_CSN_ID) had more than 50 times
+whTestsgt50 <- table(gt50tests$CPT_ID_CODE);
+whTestsgt50 <- whTestsgt50[order(whTestsgt50)];
+View(whTestsgt50);
+
+# ## Notes to self on next steps at end of day 6/26/2015:
+# Figure out top ten tests which a patient had more than 50 times that return a real value (not
+# a binary). Plot the results of the top test (or 5) for each patient in time (adjust so that
+# either admission time or threshold is aligned in timeframe). Save the plot .
+# Possible problems so far - what do I do with $PAT_ID and $ENC_CSN_ID - they do not have a
+# one-to-one correspondence.
+
 
 
 
