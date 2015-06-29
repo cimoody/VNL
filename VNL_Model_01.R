@@ -153,11 +153,79 @@ View(whTestsgt50);
 # ## Notes to self on next steps at end of day 6/26/2015:
 # Figure out top ten tests which a patient had more than 50 times that return a real value (not
 # a binary). Plot the results of the top test (or 5) for each patient in time (adjust so that
-# either admission time or threshold is aligned in timeframe). Save the plot .
+# either admission time or threshold is aligned in timeframe). Save the plot.
 # Possible problems so far - what do I do with $PAT_ID and $ENC_CSN_ID - they do not have a
 # one-to-one correspondence.
 
+topTestgt50 <- whTestsgt50[whTestsgt50>=10];
+View(topTestgt50);
+head(topTestgt50, n = 10);
+# 80048_1514    80048_1520 24700500_5585 82947.19_1661
+# 10            11            15            24
+#
+# 52000611_5585     CBCD_1511   82962.05_3442
+# 34                     110           177
+head(whTestsgt50[whTestsgt50>=8], n = 25);
+# 24701204_5585 52000335_5585    80048_1518    80048_1519
+# 8             8             9             9
+#
+# 80048_1521    80048_1522    80048_1523    80048_1554
+# 9             9             9             9
+#
+# 80048_3216    80048_5339    80048_1514    80048_1520
+# 9             9            10            11
+#
+# 24700500_5585 82947.19_1661 52000611_5585     CBCD_1511
+# 15            24            34           110
+#
+# 82962.05_3442
+# 177
+##
+## Choosing 80048_1518 as first test to evaluate
+tID <- c("CPT_CODE"="80048", "COMPONENT_ID"= as.numeric(1519));
+# ENC_CSN_ID from
+firstENC <- gt50tests[gt50tests$COMPONENT_ID==as.numeric(tID[2]) & gt50tests$CPT_CODE==tID[1],];
+#
+#                         ENC_CSN_ID CPT_CODE COMPONENT_ID TIMES_TEST_REPEATED CPT_ID_CODE
+# 73475137_80048_1519   73475137    80048         1519                  51  80048_1519
+# 75612334_80048_1519   75612334    80048         1519                  52  80048_1519
+# 72864593_80048_1519   72864593    80048         1519                  54  80048_1519
+# 71690301_80048_1519   71690301    80048         1519                  59  80048_1519
+# 74997079_80048_1519   74997079    80048         1519                  60  80048_1519
+# 76288700_80048_1519   76288700    80048         1519                  62  80048_1519
+# 71829000_80048_1519   71829000    80048         1519                  76  80048_1519
+# 76686116_80048_1519   76686116    80048         1519                  77  80048_1519
+# 74048411_80048_1519   74048411    80048         1519                  91  80048_1519
+##
+v <- firstENC$ENC_CSN_ID; # Vector of ENC_CSN_ID want to plot
+## Tables for each ENC_CSN_ID full lab data from list v
+###### SHOULD FIND A WAY TO AUTOMATE THIS ######
+pat1 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
+                    goodlab$ENC_CSN_ID==v[1],];
+pat2 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
+                    goodlab$ENC_CSN_ID==v[2],];
+pat3 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
+                    goodlab$ENC_CSN_ID==v[3],];
+pat4 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
+                    goodlab$ENC_CSN_ID==v[4],];
+pat5 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
+                    goodlab$ENC_CSN_ID==v[5],];
+pat6 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
+                    goodlab$ENC_CSN_ID==v[6],];
+pat7 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
+                    goodlab$ENC_CSN_ID==v[7],];
+pat8 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
+                    goodlab$ENC_CSN_ID==v[8],];
+pat9 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
+                    goodlab$ENC_CSN_ID==v[9],];
 
+## Working with largest table for pat9
+# str(pat9)
+# 'data.frame':	91 obs. of  17 variables
+trTimepat9 <- as.Date(as.character(pat9$RESULT_DATE[]), format ="%m/%d/%Y %H:%M" ); # Time
+pat9BUN <- as.numeric(pat9$ORD_NUM_VALUE[]); # BUN Value
+plot(trTimepat9, pat9BUN);
 
+## Lunch time 6/29/2015 notes for after lunch: Now automate or do for all 9 patient ENC_CSN_IDS
 
 
