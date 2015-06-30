@@ -200,32 +200,106 @@ firstENC <- gt50tests[gt50tests$COMPONENT_ID==as.numeric(tID[2]) & gt50tests$CPT
 v <- firstENC$ENC_CSN_ID; # Vector of ENC_CSN_ID want to plot
 ## Tables for each ENC_CSN_ID full lab data from list v
 ###### SHOULD FIND A WAY TO AUTOMATE THIS ######
-pat1 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
-                    goodlab$ENC_CSN_ID==v[1],];
-pat2 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
-                    goodlab$ENC_CSN_ID==v[2],];
-pat3 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
-                    goodlab$ENC_CSN_ID==v[3],];
-pat4 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
-                    goodlab$ENC_CSN_ID==v[4],];
-pat5 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
-                    goodlab$ENC_CSN_ID==v[5],];
-pat6 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
-                    goodlab$ENC_CSN_ID==v[6],];
-pat7 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
-                    goodlab$ENC_CSN_ID==v[7],];
-pat8 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
-                    goodlab$ENC_CSN_ID==v[8],];
-pat9 <- goodlab[goodlab$CPT_CODE==tID[1] & goodlab$COMPONENT_ID==as.numeric(tID[2]) &
-                    goodlab$ENC_CSN_ID==v[9],];
+labID <- tID;
+# To see all the entries
+View(goodlab[goodlab$CPT_CODE==labID[1] & goodlab$COMPONENT_ID==as.numeric(labID[2]),]);
+# Function to get specific ENC_CSN_ID lab results for specific lab
+getPat <- function(vec, labID = labID) {
+    pat <- goodlab[goodlab$CPT_CODE==labID[1] & goodlab$COMPONENT_ID==as.numeric(labID[2]) &
+                       goodlab$ENC_CSN_ID==vec,];
+    return(pat);
+}
+pat1 <- getPat(v[1], labID);
+pat2 <- getPat(v[2], labID);
+pat3 <- getPat(v[3], labID);
+pat4 <- getPat(v[4], labID);
+pat5 <- getPat(v[5], labID);
+pat6 <- getPat(v[6], labID);
+pat7 <- getPat(v[7], labID);
+pat8 <- getPat(v[8], labID);
+pat9 <- getPat(v[9], labID);
 
 ## Working with largest table for pat9
 # str(pat9)
 # 'data.frame':	91 obs. of  17 variables
-trTimepat9 <- as.Date(as.character(pat9$RESULT_DATE[]), format ="%m/%d/%Y %H:%M" ); # Time
-pat9BUN <- as.numeric(pat9$ORD_NUM_VALUE[]); # BUN Value
-plot(trTimepat9, pat9BUN);
+# trTimepat9 <- as.Date(as.character(pat9$RESULT_DATE[]), format ="%m/%d/%Y %H:%M" ); # Time
+# pat9BUN <- as.numeric(pat9$ORD_NUM_VALUE[]); # BUN Value
+# plot(trTimepat9, pat9BUN, panel.first = grid());
+trTimeBUN1 <- as.Date(as.character(pat1$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+trTimeBUN2 <- as.Date(as.character(pat2$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+trTimeBUN3 <- as.Date(as.character(pat3$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+trTimeBUN4 <- as.Date(as.character(pat4$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+trTimeBUN5 <- as.Date(as.character(pat5$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+trTimeBUN6 <- as.Date(as.character(pat6$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+trTimeBUN7 <- as.Date(as.character(pat7$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+trTimeBUN8 <- as.Date(as.character(pat8$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+trTimeBUN9 <- as.Date(as.character(pat9$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+
+pat9BUN <- as.numeric(as.character(pat9$ORD_NUM_VALUE)); # BUN Value
+pat8BUN <- as.numeric(as.character(pat8$ORD_NUM_VALUE)); # BUN Value
+pat7BUN <- as.numeric(as.character(pat7$ORD_NUM_VALUE)); # BUN Value
+pat6BUN <- as.numeric(as.character(pat6$ORD_NUM_VALUE)); # BUN Value
+pat5BUN <- as.numeric(as.character(pat5$ORD_NUM_VALUE)); # BUN Value
+pat4BUN <- as.numeric(as.character(pat4$ORD_NUM_VALUE)); # BUN Value
+pat3BUN <- as.numeric(as.character(pat3$ORD_NUM_VALUE)); # BUN Value
+pat2BUN <- as.numeric(as.character(pat2$ORD_NUM_VALUE)); # BUN Value
+pat1BUN <- as.numeric(as.character(pat1$ORD_NUM_VALUE)); # BUN Value
+# Creating tables for each ENC_CSN_ID
+pat1TBUN <- data.frame(trTimeBUN1, pat1BUN);
+pat2TBUN <- data.frame(trTimeBUN2, pat2BUN);
+pat3TBUN <- data.frame(trTimeBUN3, pat3BUN);
+pat4TBUN <- data.frame(trTimeBUN4, pat4BUN);
+pat5TBUN <- data.frame(trTimeBUN5, pat5BUN);
+pat6TBUN <- data.frame(trTimeBUN6, pat6BUN);
+pat7TBUN <- data.frame(trTimeBUN7, pat7BUN);
+pat8TBUN <- data.frame(trTimeBUN8, pat8BUN);
+pat9TBUN <- data.frame(trTimeBUN9, pat9BUN);
+# Removing invalid results of 99999
+pat1TBUN <- pat1TBUN[pat1TBUN$pat1BUN<500,];
+pat2TBUN <- pat2TBUN[pat2TBUN$pat2BUN<500,];
+pat3TBUN <- pat3TBUN[pat3TBUN$pat3BUN<500,];
+pat4TBUN <- pat4TBUN[pat4TBUN$pat4BUN<500,];
+pat5TBUN <- pat5TBUN[pat5TBUN$pat5BUN<500,];
+pat6TBUN <- pat6TBUN[pat6TBUN$pat6BUN<500,];
+pat7TBUN <- pat7TBUN[pat7TBUN$pat7BUN<500,];
+pat8TBUN <- pat8TBUN[pat8TBUN$pat8BUN<500,];
+pat9TBUN <- pat9TBUN[pat9TBUN$pat9BUN<500,];
+# Ordering chronologically
+pat1TBUN <- pat1TBUN[order(pat1TBUN$trTimeBUN1),];
+pat2TBUN <- pat2TBUN[order(pat2TBUN$trTimeBUN2),];
+pat3TBUN <- pat3TBUN[order(pat3TBUN$trTimeBUN3),];
+pat4TBUN <- pat4TBUN[order(pat4TBUN$trTimeBUN4),];
+pat5TBUN <- pat5TBUN[order(pat5TBUN$trTimeBUN5),];
+pat6TBUN <- pat6TBUN[order(pat6TBUN$trTimeBUN6),];
+pat7TBUN <- pat7TBUN[order(pat7TBUN$trTimeBUN7),];
+pat8TBUN <- pat8TBUN[order(pat8TBUN$trTimeBUN8),];
+pat9TBUN <- pat9TBUN[order(pat9TBUN$trTimeBUN9),];
 
 ## Lunch time 6/29/2015 notes for after lunch: Now automate or do for all 9 patient ENC_CSN_IDS
-
-
+# Automation is failing. Just doing.
+png("BUN_Time_for_ENC_CSN_ID_20150630.png", width = 600, height = 500, units = "px");
+plot(pat9TBUN$trTimeBUN9, pat9TBUN$pat9BUN, col = "gray", panel.first = grid(),
+     xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")), ylim = range(100, 170),
+     xlab = "Time (days)", ylab = "Blood Urea Nitrogen level (mmol/L)");
+points(pat8TBUN$trTimeBUN8, pat8TBUN$pat8BUN, col = "black");
+points(pat7TBUN$trTimeBUN7, pat7TBUN$pat7BUN, col = "purple");
+points(pat6TBUN$trTimeBUN6, pat6TBUN$pat6BUN, col = "blue");
+points(pat5TBUN$trTimeBUN5, pat5TBUN$pat5BUN, col = "green");
+points(pat4TBUN$trTimeBUN4, pat4TBUN$pat4BUN, col = "dark green");
+points(pat3TBUN$trTimeBUN3, pat3TBUN$pat3BUN, col = "orange");
+points(pat2TBUN$trTimeBUN2, pat2TBUN$pat2BUN, col = "red");
+points(pat1TBUN$trTimeBUN1, pat1TBUN$pat1BUN, col = "pink");
+abline(h = 135, col = "red"); # Reference low
+abline(h = 146, col = "red"); # Reference high
+lines(pat9TBUN$trTimeBUN9, pat9TBUN$pat9BUN, col = "gray");
+lines(pat8TBUN$trTimeBUN8, pat8TBUN$pat8BUN, col = "black");
+lines(pat7TBUN$trTimeBUN7, pat7TBUN$pat7BUN, col = "purple");
+lines(pat6TBUN$trTimeBUN6, pat6TBUN$pat6BUN, col = "blue");
+lines(pat5TBUN$trTimeBUN5, pat5TBUN$pat5BUN, col = "green");
+lines(pat4TBUN$trTimeBUN4, pat4TBUN$pat4BUN, col = "dark green");
+lines(pat3TBUN$trTimeBUN3, pat3TBUN$pat3BUN, col = "orange");
+lines(pat2TBUN$trTimeBUN2, pat2TBUN$pat2BUN, col = "red");
+lines(pat1TBUN$trTimeBUN1, pat1TBUN$pat1BUN, col = "pink");
+dev.off();
+svg("BUN_Time_for_ENC_CSN_ID_20150630.svg", width = 7, height = 5);
+graphics.off();
