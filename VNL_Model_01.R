@@ -209,7 +209,7 @@ getPat <- function(vec, labID = labID) {
                        goodlab$ENC_CSN_ID==vec,];
     return(pat);
 }
-pat1 <- getPat(v[1], labID);
+pat1 <- getPat(v[1], labID); ###### Will making this a list help to automate it for the length of v?
 pat2 <- getPat(v[2], labID);
 pat3 <- getPat(v[3], labID);
 pat4 <- getPat(v[4], labID);
