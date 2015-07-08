@@ -204,20 +204,22 @@ labID <- tID;
 # To see all the entries
 View(goodlab[goodlab$CPT_CODE==labID[1] & goodlab$COMPONENT_ID==as.numeric(labID[2]),]);
 # Function to get specific ENC_CSN_ID lab results for specific lab
-getPat <- function(vec, labID = labID) {
-    pat <- goodlab[goodlab$CPT_CODE==labID[1] & goodlab$COMPONENT_ID==as.numeric(labID[2]) &
-                       goodlab$ENC_CSN_ID==vec,];
+getPat <- function(vec, labID. = labID) {
+    pat <- goodlab[(goodlab$CPT_CODE==labID.[1] &
+                       goodlab$COMPONENT_ID==as.numeric(labID.[2]) &
+                       goodlab$ENC_CSN_ID==vec),];
     return(pat);
 }
-pat1 <- getPat(v[1], labID); ###### Will making this a list help to automate it for the length of v?
-pat2 <- getPat(v[2], labID);
-pat3 <- getPat(v[3], labID);
-pat4 <- getPat(v[4], labID);
-pat5 <- getPat(v[5], labID);
-pat6 <- getPat(v[6], labID);
-pat7 <- getPat(v[7], labID);
-pat8 <- getPat(v[8], labID);
-pat9 <- getPat(v[9], labID);
+pat <- list(lapply(v, FUN = getPat));
+# pat1 <- getPat(v[1], labID); ###### Will making this a list help to automate it for the length of v?
+# pat2 <- getPat(v[2], labID);
+# pat3 <- getPat(v[3], labID);
+# pat4 <- getPat(v[4], labID);
+# pat5 <- getPat(v[5], labID);
+# pat6 <- getPat(v[6], labID);
+# pat7 <- getPat(v[7], labID);
+# pat8 <- getPat(v[8], labID);
+# pat9 <- getPat(v[9], labID);
 
 ## Working with largest table for pat9
 # str(pat9)
@@ -225,81 +227,136 @@ pat9 <- getPat(v[9], labID);
 # trTimepat9 <- as.Date(as.character(pat9$RESULT_DATE[]), format ="%m/%d/%Y %H:%M" ); # Time
 # pat9BUN <- as.numeric(pat9$ORD_NUM_VALUE[]); # BUN Value
 # plot(trTimepat9, pat9BUN, panel.first = grid());
-trTimeBUN1 <- as.Date(as.character(pat1$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
-trTimeBUN2 <- as.Date(as.character(pat2$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
-trTimeBUN3 <- as.Date(as.character(pat3$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
-trTimeBUN4 <- as.Date(as.character(pat4$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
-trTimeBUN5 <- as.Date(as.character(pat5$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
-trTimeBUN6 <- as.Date(as.character(pat6$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
-trTimeBUN7 <- as.Date(as.character(pat7$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
-trTimeBUN8 <- as.Date(as.character(pat8$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
-trTimeBUN9 <- as.Date(as.character(pat9$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
-
-pat9BUN <- as.numeric(as.character(pat9$ORD_NUM_VALUE)); # BUN Value
-pat8BUN <- as.numeric(as.character(pat8$ORD_NUM_VALUE)); # BUN Value
-pat7BUN <- as.numeric(as.character(pat7$ORD_NUM_VALUE)); # BUN Value
-pat6BUN <- as.numeric(as.character(pat6$ORD_NUM_VALUE)); # BUN Value
-pat5BUN <- as.numeric(as.character(pat5$ORD_NUM_VALUE)); # BUN Value
-pat4BUN <- as.numeric(as.character(pat4$ORD_NUM_VALUE)); # BUN Value
-pat3BUN <- as.numeric(as.character(pat3$ORD_NUM_VALUE)); # BUN Value
-pat2BUN <- as.numeric(as.character(pat2$ORD_NUM_VALUE)); # BUN Value
-pat1BUN <- as.numeric(as.character(pat1$ORD_NUM_VALUE)); # BUN Value
+trTimeBUN <- list(c(length(v)));
+for (i in 1:length(v)){
+    trTimeBUN[[i]] <- as.Date(pat[[1]][i][[1]]$ORDERING_DATE, format = "%m/%d/%Y %H:%M");
+}
+# trTimeBUN1 <- as.Date(as.character(pat1$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+# trTimeBUN2 <- as.Date(as.character(pat2$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+# trTimeBUN3 <- as.Date(as.character(pat3$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+# trTimeBUN4 <- as.Date(as.character(pat4$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+# trTimeBUN5 <- as.Date(as.character(pat5$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+# trTimeBUN6 <- as.Date(as.character(pat6$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+# trTimeBUN7 <- as.Date(as.character(pat7$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+# trTimeBUN8 <- as.Date(as.character(pat8$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+# trTimeBUN9 <- as.Date(as.character(pat9$RESULT_DATE[]), format = "%m/%d/%Y %H:%M"); # Time
+patBUN <- list(c(length(v)));
+for (i in 1:length(v)){
+    patBUN[[i]] <- as.numeric(as.character(pat[[1]][i][[1]]$ORD_NUM_VALUE));
+}
+# pat9BUN <- as.numeric(as.character(pat9$ORD_NUM_VALUE)); # BUN Value
+# pat8BUN <- as.numeric(as.character(pat8$ORD_NUM_VALUE)); # BUN Value
+# pat7BUN <- as.numeric(as.character(pat7$ORD_NUM_VALUE)); # BUN Value
+# pat6BUN <- as.numeric(as.character(pat6$ORD_NUM_VALUE)); # BUN Value
+# pat5BUN <- as.numeric(as.character(pat5$ORD_NUM_VALUE)); # BUN Value
+# pat4BUN <- as.numeric(as.character(pat4$ORD_NUM_VALUE)); # BUN Value
+# pat3BUN <- as.numeric(as.character(pat3$ORD_NUM_VALUE)); # BUN Value
+# pat2BUN <- as.numeric(as.character(pat2$ORD_NUM_VALUE)); # BUN Value
+# pat1BUN <- as.numeric(as.character(pat1$ORD_NUM_VALUE)); # BUN Value
+#
 # Creating tables for each ENC_CSN_ID
-pat1TBUN <- data.frame(trTimeBUN1, pat1BUN);
-pat2TBUN <- data.frame(trTimeBUN2, pat2BUN);
-pat3TBUN <- data.frame(trTimeBUN3, pat3BUN);
-pat4TBUN <- data.frame(trTimeBUN4, pat4BUN);
-pat5TBUN <- data.frame(trTimeBUN5, pat5BUN);
-pat6TBUN <- data.frame(trTimeBUN6, pat6BUN);
-pat7TBUN <- data.frame(trTimeBUN7, pat7BUN);
-pat8TBUN <- data.frame(trTimeBUN8, pat8BUN);
-pat9TBUN <- data.frame(trTimeBUN9, pat9BUN);
+patTBUN <- list(c(length(v)));
+for (i in 1:length(v)){
+    patTBUN[[i]] <- data.frame(Test_Order_Date = trTimeBUN[i], BUN = patBUN[i]);
+    names(patTBUN[[i]]) <- c("ORDERING_DATE", "ORD_NUM_VALUE");
+}
+# pat1TBUN <- data.frame(trTimeBUN1, pat1BUN);
+# pat2TBUN <- data.frame(trTimeBUN2, pat2BUN);
+# pat3TBUN <- data.frame(trTimeBUN3, pat3BUN);
+# pat4TBUN <- data.frame(trTimeBUN4, pat4BUN);
+# pat5TBUN <- data.frame(trTimeBUN5, pat5BUN);
+# pat6TBUN <- data.frame(trTimeBUN6, pat6BUN);
+# pat7TBUN <- data.frame(trTimeBUN7, pat7BUN);
+# pat8TBUN <- data.frame(trTimeBUN8, pat8BUN);
+# pat9TBUN <- data.frame(trTimeBUN9, pat9BUN);
+#
 # Removing invalid results of 99999
-pat1TBUN <- pat1TBUN[pat1TBUN$pat1BUN<500,];
-pat2TBUN <- pat2TBUN[pat2TBUN$pat2BUN<500,];
-pat3TBUN <- pat3TBUN[pat3TBUN$pat3BUN<500,];
-pat4TBUN <- pat4TBUN[pat4TBUN$pat4BUN<500,];
-pat5TBUN <- pat5TBUN[pat5TBUN$pat5BUN<500,];
-pat6TBUN <- pat6TBUN[pat6TBUN$pat6BUN<500,];
-pat7TBUN <- pat7TBUN[pat7TBUN$pat7BUN<500,];
-pat8TBUN <- pat8TBUN[pat8TBUN$pat8BUN<500,];
-pat9TBUN <- pat9TBUN[pat9TBUN$pat9BUN<500,];
+for (i in 1:length(v)){
+    patTBUN[[i]] <- patTBUN[[i]][patTBUN[[i]]$ORD_NUM_VALUE < 500, ];
+}
+# pat1TBUN <- pat1TBUN[pat1TBUN$pat1BUN<500,];
+# pat2TBUN <- pat2TBUN[pat2TBUN$pat2BUN<500,];
+# pat3TBUN <- pat3TBUN[pat3TBUN$pat3BUN<500,];
+# pat4TBUN <- pat4TBUN[pat4TBUN$pat4BUN<500,];
+# pat5TBUN <- pat5TBUN[pat5TBUN$pat5BUN<500,];
+# pat6TBUN <- pat6TBUN[pat6TBUN$pat6BUN<500,];
+# pat7TBUN <- pat7TBUN[pat7TBUN$pat7BUN<500,];
+# pat8TBUN <- pat8TBUN[pat8TBUN$pat8BUN<500,];
+# pat9TBUN <- pat9TBUN[pat9TBUN$pat9BUN<500,];
+#
 # Ordering chronologically
-pat1TBUN <- pat1TBUN[order(pat1TBUN$trTimeBUN1),];
-pat2TBUN <- pat2TBUN[order(pat2TBUN$trTimeBUN2),];
-pat3TBUN <- pat3TBUN[order(pat3TBUN$trTimeBUN3),];
-pat4TBUN <- pat4TBUN[order(pat4TBUN$trTimeBUN4),];
-pat5TBUN <- pat5TBUN[order(pat5TBUN$trTimeBUN5),];
-pat6TBUN <- pat6TBUN[order(pat6TBUN$trTimeBUN6),];
-pat7TBUN <- pat7TBUN[order(pat7TBUN$trTimeBUN7),];
-pat8TBUN <- pat8TBUN[order(pat8TBUN$trTimeBUN8),];
-pat9TBUN <- pat9TBUN[order(pat9TBUN$trTimeBUN9),];
+for (i in 1:length(v)){
+    patTBUN[[i]] <- patTBUN[[i]][order(patTBUN[[i]]$ORDERING_DATE), ];
+}
+# pat1TBUN <- pat1TBUN[order(pat1TBUN$trTimeBUN1),];
+# pat2TBUN <- pat2TBUN[order(pat2TBUN$trTimeBUN2),];
+# pat3TBUN <- pat3TBUN[order(pat3TBUN$trTimeBUN3),];
+# pat4TBUN <- pat4TBUN[order(pat4TBUN$trTimeBUN4),];
+# pat5TBUN <- pat5TBUN[order(pat5TBUN$trTimeBUN5),];
+# pat6TBUN <- pat6TBUN[order(pat6TBUN$trTimeBUN6),];
+# pat7TBUN <- pat7TBUN[order(pat7TBUN$trTimeBUN7),];
+# pat8TBUN <- pat8TBUN[order(pat8TBUN$trTimeBUN8),];
+# pat9TBUN <- pat9TBUN[order(pat9TBUN$trTimeBUN9),];
+#
+# Getting x and y ranges for plot
+ymax <- c(); ymin <- c();
+for(i in 1:length(v)){
+    ymax[i] <- max(patTBUN[[i]][, 2]);
+    ymin[i] <- min(patTBUN[[i]][, 2]);
+}
+co <- rainbow(length(v));
+# plot(0, 0, panel.first = grid(),
+#      xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")),
+#      ylim = range(min(ymin), max(ymax)),
+#      xlab = "Time (days)",
+#      ylab = sprintf("Lab %s_%s (%s)", pat[[1]][1][[1]]$CPT_CODE[1],
+#                     pat[[1]][1][[1]]$COMPONENT_ID[1],
+#                     pat[[1]][1][[1]]$REFERENCE_UNIT[1]),
+#      type = 'n');
 
+plot(patTBUN[[1]]$ORDERING_DATE, patTBUN[[1]]$ORD_NUM_VALUE,
+     col = co[1], type = "o", panel.first = grid(),
+     xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")),
+     ylim = range(min(ymin), max(ymax)),
+     xlab = "Time (days)",
+     ylab = sprintf("Lab %s_%s   (%s)", pat[[1]][1][[1]]$CPT_CODE[1],
+                    pat[[1]][1][[1]]$COMPONENT_ID[1],
+                    pat[[1]][1][[1]]$REFERENCE_UNIT[1]));
+for (i in 2:length(v)){
+    lines(patTBUN[[i]]$ORDERING_DATE, patTBUN[[i]]$ORD_NUM_VALUE,
+         col = co[i], type = "o", panel.first = grid(),
+         xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")),
+         ylim = range(min(ymin), max(ymax)),
+         xlab = "Time (days)",
+         ylab = sprintf("Lab %s_%s   (%s)", pat[[1]][1][[1]]$CPT_CODE[1],
+                        pat[[1]][1][[1]]$COMPONENT_ID[1],
+                        pat[[1]][1][[1]]$REFERENCE_UNIT[1]));
+    axis.Date(side = 1, x = as.Date(patTBUN[[i]]$ORDERING_DATE))}
 ## Lunch time 6/29/2015 notes for after lunch: Now automate or do for all 9 patient ENC_CSN_IDS
 # Automation is failing. Just doing.
-png("BUN_Time_for_ENC_CSN_ID_20150630.png", width = 600, height = 500, units = "px");
-plot(pat9TBUN$trTimeBUN9, pat9TBUN$pat9BUN, col = "gray", panel.first = grid(),
-     xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")), ylim = range(100, 170),
-     xlab = "Time (days)", ylab = "Blood Urea Nitrogen level (mmol/L)");
-points(pat8TBUN$trTimeBUN8, pat8TBUN$pat8BUN, col = "black");
-points(pat7TBUN$trTimeBUN7, pat7TBUN$pat7BUN, col = "purple");
-points(pat6TBUN$trTimeBUN6, pat6TBUN$pat6BUN, col = "blue");
-points(pat5TBUN$trTimeBUN5, pat5TBUN$pat5BUN, col = "green");
-points(pat4TBUN$trTimeBUN4, pat4TBUN$pat4BUN, col = "dark green");
-points(pat3TBUN$trTimeBUN3, pat3TBUN$pat3BUN, col = "orange");
-points(pat2TBUN$trTimeBUN2, pat2TBUN$pat2BUN, col = "red");
-points(pat1TBUN$trTimeBUN1, pat1TBUN$pat1BUN, col = "pink");
-abline(h = 135, col = "red"); # Reference low
-abline(h = 146, col = "red"); # Reference high
-lines(pat9TBUN$trTimeBUN9, pat9TBUN$pat9BUN, col = "gray");
-lines(pat8TBUN$trTimeBUN8, pat8TBUN$pat8BUN, col = "black");
-lines(pat7TBUN$trTimeBUN7, pat7TBUN$pat7BUN, col = "purple");
-lines(pat6TBUN$trTimeBUN6, pat6TBUN$pat6BUN, col = "blue");
-lines(pat5TBUN$trTimeBUN5, pat5TBUN$pat5BUN, col = "green");
-lines(pat4TBUN$trTimeBUN4, pat4TBUN$pat4BUN, col = "dark green");
-lines(pat3TBUN$trTimeBUN3, pat3TBUN$pat3BUN, col = "orange");
-lines(pat2TBUN$trTimeBUN2, pat2TBUN$pat2BUN, col = "red");
-lines(pat1TBUN$trTimeBUN1, pat1TBUN$pat1BUN, col = "pink");
-dev.off();
-svg("BUN_Time_for_ENC_CSN_ID_20150630.svg", width = 7, height = 5);
-graphics.off();
+# png("BUN_Time_for_ENC_CSN_ID_20150630.png", width = 600, height = 500, units = "px");
+# plot(pat9TBUN$trTimeBUN9, pat9TBUN$pat9BUN, col = "gray", panel.first = grid(),
+#      xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")), ylim = range(100, 170),
+#      xlab = "Time (days)", ylab = "Blood Urea Nitrogen level (mmol/L)");
+# points(pat8TBUN$trTimeBUN8, pat8TBUN$pat8BUN, col = "black");
+# points(pat7TBUN$trTimeBUN7, pat7TBUN$pat7BUN, col = "purple");
+# points(pat6TBUN$trTimeBUN6, pat6TBUN$pat6BUN, col = "blue");
+# points(pat5TBUN$trTimeBUN5, pat5TBUN$pat5BUN, col = "green");
+# points(pat4TBUN$trTimeBUN4, pat4TBUN$pat4BUN, col = "dark green");
+# points(pat3TBUN$trTimeBUN3, pat3TBUN$pat3BUN, col = "orange");
+# points(pat2TBUN$trTimeBUN2, pat2TBUN$pat2BUN, col = "red");
+# points(pat1TBUN$trTimeBUN1, pat1TBUN$pat1BUN, col = "pink");
+# abline(h = 135, col = "red"); # Reference low
+# abline(h = 146, col = "red"); # Reference high
+# lines(pat9TBUN$trTimeBUN9, pat9TBUN$pat9BUN, col = "gray");
+# lines(pat8TBUN$trTimeBUN8, pat8TBUN$pat8BUN, col = "black");
+# lines(pat7TBUN$trTimeBUN7, pat7TBUN$pat7BUN, col = "purple");
+# lines(pat6TBUN$trTimeBUN6, pat6TBUN$pat6BUN, col = "blue");
+# lines(pat5TBUN$trTimeBUN5, pat5TBUN$pat5BUN, col = "green");
+# lines(pat4TBUN$trTimeBUN4, pat4TBUN$pat4BUN, col = "dark green");
+# lines(pat3TBUN$trTimeBUN3, pat3TBUN$pat3BUN, col = "orange");
+# lines(pat2TBUN$trTimeBUN2, pat2TBUN$pat2BUN, col = "red");
+# lines(pat1TBUN$trTimeBUN1, pat1TBUN$pat1BUN, col = "pink");
+# dev.off();
+# svg("BUN_Time_for_ENC_CSN_ID_20150630.svg", width = 7, height = 5);
+# graphics.off();
