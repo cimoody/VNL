@@ -257,8 +257,17 @@ for (i in 1:length(v)){
 # Creating tables for each ENC_CSN_ID
 patTBUN <- list(c(length(v)));
 for (i in 1:length(v)){
-    patTBUN[[i]] <- data.frame(Test_Order_Date = trTimeBUN[i], BUN = patBUN[i]);
-    names(patTBUN[[i]]) <- c("ORDERING_DATE", "ORD_NUM_VALUE");
+    patTBUN[[i]] <- data.frame(Test_Order_Date = trTimeBUN[i], BUN = patBUN[i],
+                               pat[[1]][i][[1]]$REFERENCE_UNIT,
+                               pat[[1]][i][[1]]$PAT_ID,
+                               pat[[1]][i][[1]]$REFERENCE_HIGH,
+                               pat[[1]][i][[1]]$REFERENCE_LOW,
+                               pat[[1]][i][[1]]$CPT_CODE,
+                               pat[[1]][i][[1]]$COMPONENT_ID,
+                               MIN_RAW_LABS = cutoff);
+    names(patTBUN[[i]]) <- c("ORDERING_DATE", "ORD_NUM_VALUE", "REFERENCE_UNIT",
+                             "PAT_ID", "REFERENCE_HIGH", "REFERENCE_LOW",
+                             "CPT_CODE", "COMPONENT_ID", "MIN_RAW_LABS");
 }
 # pat1TBUN <- data.frame(trTimeBUN1, pat1BUN);
 # pat2TBUN <- data.frame(trTimeBUN2, pat2BUN);
@@ -322,6 +331,9 @@ plot(patTBUN[[1]]$ORDERING_DATE, patTBUN[[1]]$ORD_NUM_VALUE,
      ylab = sprintf("Lab %s_%s   (%s)", pat[[1]][1][[1]]$CPT_CODE[1],
                     pat[[1]][1][[1]]$COMPONENT_ID[1],
                     pat[[1]][1][[1]]$REFERENCE_UNIT[1]));
+abline(h = as.numeric(as.character(patTBUN[[1]]$REFERENCE_LOW[1])), col = "red"); # Reference low
+abline(h = as.numeric(as.character(patTBUN[[1]]$REFERENCE_HIGH[1])), col = "red"); # Reference high
+axis.Date(side = 1, x = as.Date(patTBUN[[1]]$ORDERING_DATE));
 for (i in 2:length(v)){
     lines(patTBUN[[i]]$ORDERING_DATE, patTBUN[[i]]$ORD_NUM_VALUE,
          col = co[i], type = "o", panel.first = grid(),
@@ -331,7 +343,9 @@ for (i in 2:length(v)){
          ylab = sprintf("Lab %s_%s   (%s)", pat[[1]][1][[1]]$CPT_CODE[1],
                         pat[[1]][1][[1]]$COMPONENT_ID[1],
                         pat[[1]][1][[1]]$REFERENCE_UNIT[1]));
-    axis.Date(side = 1, x = as.Date(patTBUN[[i]]$ORDERING_DATE))}
+    abline(h = as.numeric(as.character(patTBUN[[i]]$REFERENCE_LOW[1])), col = "red"); # Reference low
+    abline(h = as.numeric(as.character(patTBUN[[i]]$REFERENCE_HIGH[1])), col = "red"); # Reference high
+    axis.Date(side = 1, x = as.Date(patTBUN[[i]]$ORDERING_DATE));}
 ## Lunch time 6/29/2015 notes for after lunch: Now automate or do for all 9 patient ENC_CSN_IDS
 # Automation is failing. Just doing.
 # png("BUN_Time_for_ENC_CSN_ID_20150630.png", width = 600, height = 500, units = "px");
