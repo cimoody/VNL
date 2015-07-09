@@ -78,8 +78,6 @@ getResultDate <- function(cutoff, tID){
     # Finding which tests patients (determined by ENC_CSN_ID) had more than cutoff # of times
     whTestsgtCO <- table(gtCOtests$CPT_ID_CODE);
     whTestsgtCO <- whTestsgtCO[order(whTestsgtCO)];
-    # # Choosing 80048_1518 as first test to evaluate
-    # tID <- c("CPT_CODE"="80048", "COMPONENT_ID"= as.numeric(1519));
     # ENC_CSN_ID from
     firstENC <- gtCOtests[gtCOtests$COMPONENT_ID==as.numeric(tID[2]) &
                               gtCOtests$CPT_CODE==tID[1],];
@@ -129,39 +127,10 @@ getResultDate <- function(cutoff, tID){
     for (i in 1:length(v)){
         patTLAB[[i]] <- patTLAB[[i]][order(patTLAB[[i]]$ORDERING_DATE), ];
     }
-    # Setting up graphics
-#     ymax <- c(); ymin <- c();
-#     for(i in 1:length(v)){
-#         ymax[i] <- max(patTLAB[[i]][, 2]);
-#         ymin[i] <- min(patTLAB[[i]][, 2]);
-#     }
-#     co <- rainbow(length(v));
-#     plot(patTLAB[[i]]$ORDERING_DATE, patTLAB[[i]]$ORD_NUM_VALUE,
-#          col = co[i], type = "o", panel.first = grid(),
-#          xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")),
-#          ylim = range(min(ymin), max(ymax)),
-#          xlab = "Time (days)",
-#          ylab = sprintf("Lab %s_%s   (%s)", pat[[1]][1][[1]]$CPT_CODE[1],
-#                         pat[[1]][1][[1]]$COMPONENT_ID[1],
-#                         pat[[1]][1][[1]]$REFERENCE_UNIT[1]));
-#     abline(h = as.numeric(as.character(patTLAB[[1]]$REFERENCE_LOW[1])), col = "red"); # Reference low
-#     abline(h = as.numeric(as.character(patTLAB[[1]]$REFERENCE_HIGH[1])), col = "red"); # Reference high
-#     axis.Date(side = 1, x = as.Date(patTLAB[[1]]$ORDERING_DATE));
-#     for (i in 2:length(v)){
-#         lines(patTLAB[[i]]$ORDERING_DATE, patTLAB[[i]]$ORD_NUM_VALUE,
-#               col = co[i], type = "b", panel.first = grid(),
-#               xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")),
-#               ylim = range(min(ymin), max(ymax)),
-#               xlab = "Time (days)",
-#               ylab = sprintf("Lab %s_%s   (%s)", pat[[1]][1][[1]]$CPT_CODE[1],
-#                              pat[[1]][1][[1]]$COMPONENT_ID[1],
-#                              pat[[1]][1][[1]]$REFERENCE_UNIT[1]));
-#         abline(h = as.numeric(as.character(patTLAB[[i]]$REFERENCE_LOW[1])), col = "red"); # Reference low
-#         abline(h = as.numeric(as.character(patTLAB[[i]]$REFERENCE_HIGH[1])), col = "red"); # Reference high
-#         axis.Date(side = 1, x = as.Date(patTLAB[[i]]$ORDERING_DATE));}
-    return(patTLAB);}
+    return(patTLAB);
+}
 
-## FUNCTION THAT PLOTS ALL ECN_CSN_ID ONE ONE LAB FROM LIST RETURNED FROM getResultDate
+## FUNCTION THAT PLOTS ALL ECN_CSN_ID FOR ONE LAB FROM LIST RETURNED FROM getResultDate
 makePlot <- function(ListOfDataFrames) {
     ymax <- c(); ymin <- c();
     for(i in 1:length(ListOfDataFrames)){
@@ -198,8 +167,6 @@ makePlot <- function(ListOfDataFrames) {
     return(svg(sprintf("Lab_%s_%s_gt_%g.svg",
                 ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
                 ListOfDataFrames[[1]]$MIN_RAW_LABS, width = 7, height = 5)));
-    # graphics.off();
-    #return(pict);
 }
 
 
