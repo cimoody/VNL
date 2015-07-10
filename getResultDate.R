@@ -132,10 +132,15 @@ getResultDate <- function(cutoff, tID){
 
 ## FUNCTION THAT PLOTS ALL ECN_CSN_ID FOR ONE LAB FROM LIST RETURNED FROM getResultDate
 makePlot <- function(ListOfDataFrames) {
+    svg(sprintf("Lab_%s_%s_gt_%g.svg",
+                ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
+                ListOfDataFrames[[1]]$MIN_RAW_LABS, width = 7, height = 5));
     ymax <- c(); ymin <- c();
     for(i in 1:length(ListOfDataFrames)){
-        ymax[i] <- max(ListOfDataFrames[[i]][, 2]);
-        ymin[i] <- min(ListOfDataFrames[[i]][, 2]);
+        ymax[i] <- max(c(max(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]),
+                         as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_HIGH[1])) ));
+        ymin[i] <- min(c(min(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]),
+                         as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])) ));
     }
     co <- rainbow(length(ListOfDataFrames));
     plot(ListOfDataFrames[[i]]$ORDERING_DATE, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
@@ -146,8 +151,10 @@ makePlot <- function(ListOfDataFrames) {
          ylab = sprintf("Lab %s_%s   (%s)", ListOfDataFrames[[1]]$CPT_CODE[1],
                         ListOfDataFrames[[1]]$COMPONENT_ID[1],
                         ListOfDataFrames[[1]]$REFERENCE_UNIT[1]));
-    abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])), col = "red"); # Reference low
-    abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_HIGH[1])), col = "red"); # Reference high
+    # Reference low
+    abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])), col = "red");
+    # Reference high
+    abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_HIGH[1])), col = "red");
     axis.Date(side = 1, x = as.Date(ListOfDataFrames[[1]]$ORDERING_DATE));
     for (i in 1:length(ListOfDataFrames)){
         lines(ListOfDataFrames[[i]]$ORDERING_DATE, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
@@ -158,8 +165,10 @@ makePlot <- function(ListOfDataFrames) {
               ylab = sprintf("Lab %s_%s   (%s)", ListOfDataFrames[[1]]$CPT_CODE[1],
                              ListOfDataFrames[[1]]$COMPONENT_ID[1],
                              ListOfDataFrames[[1]]$REFERENCE_UNIT[1]));
-        abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_LOW[1])), col = "red"); # Reference low
-        abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_HIGH[1])), col = "red"); # Reference high
+        # Reference low
+        abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_LOW[1])), col = "red");
+        # Reference high
+        abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_HIGH[1])), col = "red");
         axis.Date(side = 1, x = as.Date(ListOfDataFrames[[i]]$ORDERING_DATE));}
     nm <-deparse(substitute(ListOfDataFrames));
     print(nm);
@@ -168,5 +177,3 @@ makePlot <- function(ListOfDataFrames) {
                 ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
                 ListOfDataFrames[[1]]$MIN_RAW_LABS, width = 7, height = 5)));
 }
-
-
