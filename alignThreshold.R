@@ -55,3 +55,80 @@ addProperTime <- function(ListOfDataFrames, t0DataFrame){
     }
     return(ListOfDataFrames);
 }
+
+# Function to return a dataframe with the proper time
+returnProperTime <- function(originalListOfDataFrames) {
+    ListOfDataFrames <- normalStart(originalListOfDataFrames);
+    if (length(ListOfDataFrames)==0) {return(0);}
+    properTime <- t0Finder(ListOfDataFrames);
+    adjustedList <- addProperTime(ListOfDataFrames, properTime);
+    for (j in 1:length(adjustedList)) {
+        if (is.null(adjustedList[[j]]$PROPER_TIME)) {
+            adjustedList[[j]]$PROPER_TIME <-
+                adjustedList[[j]]$ORDERING_DATE -
+                adjustedList[[j]]$ORDERING_DATE[1]
+                    # which.max(adjustedList[[j]]$ORD_NUM_VALUE)];
+        }
+    }
+    return(adjustedList);
+}
+
+# I have multiple test results ordered on the same day.
+# Need to create a function to find all the multiple tests per day,
+# get the mean, and standard deviation of the results.
+# Not sure how to do this yet. Return to it on Monday - ask David for advice.
+
+# Function to create vector of PAT_ID's to use in feature selection classifier.
+
+makePlot2 <- function(ListOfDataFrames) {
+    svg(sprintf("Lab_by_day_%s_%s_gt_%g.svg",
+                ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
+                ListOfDataFrames[[1]]$MIN_RAW_LABS), width = 7, height = 5);
+    ymax <- c(); ymin <- c();
+    xmax <- c(); xmin <- c();
+    for(i in 1:length(ListOfDataFrames)){
+        ymax[i] <- max(c(max(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]),
+                         as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_HIGH[1])) ));
+        ymin[i] <- min(c(min(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]),
+                         as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])) ));
+        xmax[i] <- max(as.numeric(ListOfDataFrames[[i]]$PROPER_TIME));
+        xmin[i] <- min(as.numeric(ListOfDataFrames[[i]]$PROPER_TIME));
+    }
+    co <- rainbow(length(ListOfDataFrames));
+    if (length(ListOfDataFrames[[i]]$PROPER_TIME)==length(ListOfDataFrames[[i]]$ORD_NUM_VALUE)){
+        plot(ListOfDataFrames[[i]]$PROPER_TIME, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
+             col = co[i], type = "o", panel.first = grid(),
+             xlim = range(min(xmin), max(xmax)),
+             ylim = range(min(ymin), max(ymax)),
+             xlab = "Time (days)",
+             ylab = sprintf("Lab %s_%s   (%s)", ListOfDataFrames[[1]]$CPT_CODE[1],
+                            ListOfDataFrames[[1]]$COMPONENT_ID[1],
+                            ListOfDataFrames[[1]]$REFERENCE_UNIT[1]));
+        # Reference low
+        abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])), col = "red");
+        # Reference high
+        abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_HIGH[1])), col = "red");
+        # axis.Date(side = 1, x = as.Date(ListOfDataFrames[[1]]$PROPER_TIME));
+        for (i in 1:length(ListOfDataFrames)){
+            lines(ListOfDataFrames[[i]]$PROPER_TIME, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
+                  col = co[i], type = "b", panel.first = grid(),
+                  xlim = range(min(xmin), max(xmax)),
+                  ylim = range(min(ymin), max(ymax)),
+                  xlab = "Time (days)",
+                  ylab = sprintf("Lab %s_%s   (%s)", ListOfDataFrames[[1]]$CPT_CODE[1],
+                                 ListOfDataFrames[[1]]$COMPONENT_ID[1],
+                                 ListOfDataFrames[[1]]$REFERENCE_UNIT[1]));
+            # Reference low
+            abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_LOW[1])), col = "red");
+            # Reference high
+            abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_HIGH[1])), col = "red");
+            # axis.Date(side = 1, x = as.Date(ListOfDataFrames[[i]]$PROPER_TIME));}
+        }
+    }
+    nm <-deparse(substitute(ListOfDataFrames));
+    print(nm);
+    dev.off();
+    return(svg(sprintf("Lab_by_day_%s_%s_gt_%g.svg",
+                       ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
+                       ListOfDataFrames[[1]]$MIN_RAW_LABS), width = 7, height = 5));
+}
