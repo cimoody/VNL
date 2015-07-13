@@ -2,6 +2,7 @@
 ## Written by Cristina Moody
 ## July 2015
 
+dDir <- "E:/VNL\ Data\ from\ Joe/";
 
 # FUNCTION TO CHANGE FACTOR TO NUMERIC
 f2n <- function(val) {val <- as.numeric(as.character(val));}
@@ -66,8 +67,12 @@ returnProperTime <- function(originalListOfDataFrames) {
         if (is.null(adjustedList[[j]]$PROPER_TIME)) {
             adjustedList[[j]]$PROPER_TIME <-
                 adjustedList[[j]]$ORDERING_DATE -
-                adjustedList[[j]]$ORDERING_DATE[1]
-                    # which.max(adjustedList[[j]]$ORD_NUM_VALUE)];
+                adjustedList[[j]]$ORDERING_DATE[1];
+                    # which.max(adjustedList[[j]]$ORD_NUM_VALUE)]; # Aligning maximums, not what I wanted.
+            adjustedList[[j]]$INT_FLAG <- 0;
+        }
+        else {
+            adjustedList[[j]]$INT_FLAG <- 1;
         }
     }
     return(adjustedList);
@@ -78,8 +83,7 @@ returnProperTime <- function(originalListOfDataFrames) {
 # get the mean, and standard deviation of the results.
 # Not sure how to do this yet. Return to it on Monday - ask David for advice.
 
-# Function to create vector of PAT_ID's to use in feature selection classifier.
-
+# Function to plot everything with new proper time
 makePlot2 <- function(ListOfDataFrames) {
     svg(sprintf("Lab_by_day_%s_%s_gt_%g.svg",
                 ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
@@ -128,7 +132,19 @@ makePlot2 <- function(ListOfDataFrames) {
     nm <-deparse(substitute(ListOfDataFrames));
     print(nm);
     dev.off();
-    return(svg(sprintf("Lab_by_day_%s_%s_gt_%g.svg",
+    return( svg(sprintf("Lab_by_day_%s_%s_gt_%g.svg",
                        ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
-                       ListOfDataFrames[[1]]$MIN_RAW_LABS), width = 7, height = 5));
+                       ListOfDataFrames[[1]]$MIN_RAW_LABS), width = 7, height = 5) );
 }
+
+# Function to save each table to a csv file
+makeCSV <- function(ListOfDataFrames) {
+    for (j in 1:length(ListOfDataFrames)) {
+        write.csv(ListOfDataFrames[[j]],
+                  file = sprintf("E:/data_for_Oleg/Test__%s__patient_%s.csv",
+                                 deparse(substitute(ListOfDataFrames)),
+                                 ListOfDataFrames[[j]]$PAT_ID[1]),
+                  row.names = FALSE, na="");
+    }
+}
+
