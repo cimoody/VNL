@@ -148,3 +148,112 @@ makeCSV <- function(ListOfDataFrames) {
     }
 }
 
+# Function to get the standard deviation, but return 0 if vector is of length 1.
+getSD <- function(val) {
+    if (is.na(sd(val))) {
+        return(0);
+    } else {
+        return(sd(val));
+    }
+}
+
+# Function to go through list of dataframes and
+# replace repeated labs with mean and add standard deviation column
+getMeanSDListDataFrames <- function(ListOfDataFrames) {
+    # Create new list so not to overwrite original
+    newListOfDataFrames <- ListOfDataFrames;
+    for (j in  1:length(ListOfDataFrames)){
+        # Function to get the standard deviations of labs repeated on a given day
+        sds <- aggregate(ORD_NUM_VALUE ~ ORDERING_DATE, data = ListOfDataFrames[[j]], FUN = getSD);
+        # Function to get the mean value of labs repeated on a given day
+        means <- aggregate(ORD_NUM_VALUE ~ ORDERING_DATE, data = ListOfDataFrames[[j]], FUN = mean);
+        # Function that merges the days and keeps the maximum ORD_NUM_VALUE - from the internet.
+        newListOfDataFrames[[j]] <- do.call(rbind,
+                                            lapply(split(newListOfDataFrames[[j]],
+                                                         newListOfDataFrames[[j]]$ORDERING_DATE),
+                                                   function(chunk) chunk[which.max(chunk$ORD_NUM_VALUE), ]));
+        # Changing the maximum ORD_NUM_VALUE to the mean
+        newListOfDataFrames[[j]]$ORD_NUM_VALUE <- means$ORD_NUM_VALUE;
+        # Adding the standard deviation
+        newListOfDataFrames[[j]]$SD_ORD_VAL <- sds$ORD_NUM_VALUE;
+    }
+    return(newListOfDataFrames);
+}
+
+# # Function to get the standard deviations of labs repeated on a given day
+# sds <- aggregate(ORD_NUM_VALUE ~ ORDERING_DATE, data = test[[2]], FUN = getSD);
+# # Function to get the mean value of labs repeated on a given day
+# means <- aggregate(ORD_NUM_VALUE ~ ORDERING_DATE, data = test[[2]], FUN = mean);
+# # Function that merges the days and keeps the maximum ORD_NUM_VALUE - from the internet - it is awesome.
+# test[[2]] <- do.call(rbind,lapply(split(test[[2]],test[[2]]$ORDERING_DATE),
+#                                   function(chunk) chunk[which.max(chunk$ORD_NUM_VALUE),]));
+# # Changing the maximum ORD_NUM_VALUE to the mean
+# test[[2]]$ORD_NUM_VALUE <- means$ORD_NUM_VALUE;
+# # Adding the standard deviation
+# test[[2]]$SD_ORD_VAL <- sds$ORD_NUM_VALUE;
+
+# Function to plot everything with
+# new mean for repeated labs and error bar of standard deviation
+makePlot3 <- function(ListOfDataFrames) {
+    svg(sprintf("Mean_lab_by_day_%s_%s_gt_%g.svg",
+                ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
+                ListOfDataFrames[[1]]$MIN_RAW_LABS), width = 7, height = 5);
+    ymax <- c(); ymin <- c();
+    xmax <- c(); xmin <- c();
+    for(i in 1:length(ListOfDataFrames)){
+        ymax[i] <- max(c(max(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]),
+                         as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_HIGH[1])) ));
+        ymin[i] <- min(c(min(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]),
+                         as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])) ));
+        xmax[i] <- max(as.numeric(ListOfDataFrames[[i]]$PROPER_TIME));
+        xmin[i] <- min(as.numeric(ListOfDataFrames[[i]]$PROPER_TIME));
+    }
+    co <- rainbow(length(ListOfDataFrames));
+    if (length(ListOfDataFrames[[i]]$PROPER_TIME)==length(ListOfDataFrames[[i]]$ORD_NUM_VALUE)){
+        # Plot
+        plot(ListOfDataFrames[[i]]$PROPER_TIME, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
+             col = co[i], type = "o", panel.first = grid(),
+             xlim = range(min(xmin), max(xmax)),
+             ylim = range(min(ymin), max(ymax)),
+             xlab = "Time (days)",
+             ylab = sprintf("Lab %s_%s   (%s)", ListOfDataFrames[[1]]$CPT_CODE[1],
+                            ListOfDataFrames[[1]]$COMPONENT_ID[1],
+                            ListOfDataFrames[[1]]$REFERENCE_UNIT[1]));
+        # Add Errorbars with SD_ORD_VAL
+        with(data = ListOfDataFrames[[i]],
+             expr = errbar(PROPER_TIME, ORD_NUM_VALUE, ORD_NUM_VALUE + SD_ORD_VAL,
+                           ORD_NUM_VALUE - SD_ORD_VAL, pch = 'p', add = T,
+                           errbar.col = co[i], cap = 0.02));
+        # Reference low
+        abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])), col = "red");
+        # Reference high
+        abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_HIGH[1])), col = "red");
+        # axis.Date(side = 1, x = as.Date(ListOfDataFrames[[1]]$PROPER_TIME));
+        for (i in 1:length(ListOfDataFrames)){
+            lines(ListOfDataFrames[[i]]$PROPER_TIME, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
+                  col = co[i], type = "b", panel.first = grid(),
+                  xlim = range(min(xmin), max(xmax)),
+                  ylim = range(min(ymin), max(ymax)),
+                  xlab = "Time (days)",
+                  ylab = sprintf("Lab %s_%s   (%s)", ListOfDataFrames[[1]]$CPT_CODE[1],
+                                 ListOfDataFrames[[1]]$COMPONENT_ID[1],
+                                 ListOfDataFrames[[1]]$REFERENCE_UNIT[1]));
+            # Add Errorbars with SD_ORD_VAL
+            with(data = ListOfDataFrames[[i]],
+                 expr = errbar(PROPER_TIME, ORD_NUM_VALUE, ORD_NUM_VALUE + SD_ORD_VAL,
+                               ORD_NUM_VALUE - SD_ORD_VAL, pch = 'p', add = T,
+                               errbar.col = co[i], cap = 0.02));
+            # Reference low
+            abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_LOW[1])), col = "red");
+            # Reference high
+            abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_HIGH[1])), col = "red");
+            # axis.Date(side = 1, x = as.Date(ListOfDataFrames[[i]]$PROPER_TIME));}
+        }
+    }
+    nm <-deparse(substitute(ListOfDataFrames));
+    print(nm);
+    dev.off();
+    return( svg(sprintf("Mean_lab_by_day_%s_%s_gt_%g.svg",
+                        ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
+                        ListOfDataFrames[[1]]$MIN_RAW_LABS), width = 7, height = 5) );
+}
