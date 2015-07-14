@@ -201,10 +201,12 @@ makePlot3 <- function(ListOfDataFrames) {
     ymax <- c(); ymin <- c();
     xmax <- c(); xmin <- c();
     for(i in 1:length(ListOfDataFrames)){
-        ymax[i] <- max(c(max(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]),
-                         as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_HIGH[1])) ));
-        ymin[i] <- min(c(min(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]),
-                         as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])) ));
+        ymax[i] <- max(c(max(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]
+                             + ListOfDataFrames[[i]][which.max(ListOfDataFrames[[i]][,2]),12], # Adds the error bar
+                             as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_HIGH[1])) )));
+        ymin[i] <- min(c(min(ListOfDataFrames[[i]][, 2][!is.na(ListOfDataFrames[[i]][, 2])]
+                             - ListOfDataFrames[[i]][which.min(ListOfDataFrames[[i]][,2]),12], # Subtracts the error bar
+                             as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])) )));
         xmax[i] <- max(as.numeric(ListOfDataFrames[[i]]$PROPER_TIME));
         xmin[i] <- min(as.numeric(ListOfDataFrames[[i]]$PROPER_TIME));
     }
@@ -222,7 +224,7 @@ makePlot3 <- function(ListOfDataFrames) {
         # Add Errorbars with SD_ORD_VAL
         with(data = ListOfDataFrames[[i]],
              expr = errbar(PROPER_TIME, ORD_NUM_VALUE, ORD_NUM_VALUE + SD_ORD_VAL,
-                           ORD_NUM_VALUE - SD_ORD_VAL, pch = 'p', add = T,
+                           ORD_NUM_VALUE - SD_ORD_VAL, pch = "", add = T,
                            errbar.col = co[i], cap = 0.02));
         # Reference low
         abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])), col = "red");
@@ -241,7 +243,7 @@ makePlot3 <- function(ListOfDataFrames) {
             # Add Errorbars with SD_ORD_VAL
             with(data = ListOfDataFrames[[i]],
                  expr = errbar(PROPER_TIME, ORD_NUM_VALUE, ORD_NUM_VALUE + SD_ORD_VAL,
-                               ORD_NUM_VALUE - SD_ORD_VAL, pch = 'p', add = T,
+                               ORD_NUM_VALUE - SD_ORD_VAL, pch = "", add = T,
                                errbar.col = co[i], cap = 0.02));
             # Reference low
             abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_LOW[1])), col = "red");

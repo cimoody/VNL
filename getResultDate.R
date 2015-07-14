@@ -10,6 +10,8 @@ install.packages("compare");
 library(compare);
 install.packages("plyr");
 library(plyr);
+install.packages("Hmisc", dependencies = T);
+library(Hmisc);
 
 # Preprosessing files - must be done manually for each data set
 # Working directory: "C:/Users/CMoody/Desktop/workspace/VNL"
