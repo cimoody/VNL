@@ -91,3 +91,31 @@ flag$REF_HIGH <- as.numeric(flag$REF_HIGH);
 # INTERESTING is defined as 1 !!
 flag$INT_FLAG <- as.numeric((flag$ORD_NUM_VALUE < flag$REF_LOW)
                             | (flag$ORD_NUM_VALUE > flag$REF_HIGH)); # Creating Flag!
+
+# 15 July 2015 - Dropping previous inquiry line with flag$INT_FLAG because
+# it does not consider overall patient timeline. IT may have been possible to
+# continue it, but it would be more work and code already does what I need in
+# alignThreshold.R
+# Instead added INT_FLAG to table from alignThreshold.R code. Continuing
+# classifier work from getMeanSDListDataFrames() and from returnProperTime()
+# functions from code in alignThreshold.R .
+
+# Function to get flag value from list of dataframes returned from returnProperTime()
+# or form getMeanSDListDataFrames() and add flag to goodpop data. Classifier
+# is looking for features from population data that is 'time-independent'.
+flagPopData <- function(popData, labData, ListOfDataFrames) {
+    newPop <- data.frame();
+    patFlag <- data.frame();
+    for (j in 1:length(ListOfDataFrames)) {
+        patFlag <- rbind(patFlag,
+                            data.frame("PAT_ID" = ListOfDataFrames[[j]]$PAT_ID[1],
+                                       "INT_FLAG" = ListOfDataFrames[[j]]$INT_FLAG[1],
+                                       "ENC_CSN_ID" = labData[
+                                           which(labData$PAT_ID
+                                                 ==ListOfDataFrames[[j]]$PAT_ID[1]), "ENC_CSN_ID"][1]) );
+        newPop <- rbind(newPop, popData[which(popData$ENC_CSN_ID==patFlag$ENC_CSN_ID[j]),] );
+        # newPop$INT_FLAG <- patFlag$INT_FLAG[j];
+    }
+    newPop <- cbind(newPop, patFlag$INT_FLAG);
+    return(newPop);
+}
