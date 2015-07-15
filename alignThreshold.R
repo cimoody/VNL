@@ -13,7 +13,7 @@ normalStart <- function(ListOfDataFrames) {
     for(i in 1:length(ListOfDataFrames)) {
         if ( (ListOfDataFrames[[i]]$ORD_NUM_VALUE[1] <= f2n(ListOfDataFrames[[i]]$REFERENCE_HIGH[1])) &
              (ListOfDataFrames[[i]]$ORD_NUM_VALUE[1] >= f2n(ListOfDataFrames[[i]]$REFERENCE_LOW[1])) )
-        {x[i] <- ListOfDataFrames[i];} else {x[i]=NA}
+        {x[i] <- ListOfDataFrames[i];} else {x[i] <- NA}
     }
     x <- x[!is.na(x[])];
     return(x)
