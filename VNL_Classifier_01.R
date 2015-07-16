@@ -3,34 +3,29 @@
 ## Created by Cristina I Moody
 ## July 2015
 
-# Set random seed
-sseed = 42;
+# Installing Libraries
+source(file = "librariesVNL.R");# if starting R for 1st time today
 
 # Installing Gaussian Process Library
-install.packages("tgp");
 library(tgp);
-
 # Installing package to compare the two data tables
-install.packages("compare");
 library(compare);
-install.packages("plyr");
 library(plyr);
-
+library(Hmisc);
 # Package for classification
 library(rpart);
-install.packages('rattle');
 library(rattle);
-install.packages('rpart.plot');
 library(rpart.plot);
-install.packages('RColorBrewer');
 library(RColorBrewer);
-install.packages('randomForest');
 library(randomForest);
-set.seed(sseed);
-
+library(party);
 # Additional package for categorical graphics
-install.packages("vcd");
 library(vcd);
+
+
+# Set random seed
+sseed = 42;
+set.seed(sseed);
 
 # From VNL_Model_01.R
 # Working directory: "C:/Users/CMoody/Desktop/workspace/VNL"
@@ -93,7 +88,7 @@ flag$INT_FLAG <- as.numeric((flag$ORD_NUM_VALUE < flag$REF_LOW)
                             | (flag$ORD_NUM_VALUE > flag$REF_HIGH)); # Creating Flag!
 
 # 15 July 2015 - Dropping previous inquiry line with flag$INT_FLAG because
-# it does not consider overall patient timeline. IT may have been possible to
+# it does not consider overall patient timeline. It MAY have been possible to
 # continue it, but it would be more work and code already does what I need in
 # alignThreshold.R
 # Instead added INT_FLAG to table from alignThreshold.R code. Continuing
@@ -103,9 +98,11 @@ flag$INT_FLAG <- as.numeric((flag$ORD_NUM_VALUE < flag$REF_LOW)
 # Function to get flag value from list of dataframes returned from returnProperTime()
 # or form getMeanSDListDataFrames() and add flag to goodpop data. Classifier
 # is looking for features from population data that is 'time-independent'.
-flagPopData <- function(popData, labData, ListOfDataFrames) {
+flagPopData <- function(popData, labData, originalListOfDataFrames) {
     newPop <- data.frame();
     patFlag <- data.frame();
+    # Function returnProperTime() from alignThreshold.R
+    ListOfDataFrames <- returnProperTime(originalListOfDataFrames);
     for (j in 1:length(ListOfDataFrames)) {
         patFlag <- rbind(patFlag,
                             data.frame("PAT_ID" = ListOfDataFrames[[j]]$PAT_ID[1],
@@ -122,21 +119,148 @@ flagPopData <- function(popData, labData, ListOfDataFrames) {
 }
 
 # Creating a dataframe with the interesting flag for K tests
-popData_K_80048_1520 <- flagPopData(popData = goodpop, labData = goodlab,
-                                    ListOfDataFrames = mspK_80048_1520_gt20);
-popData_K_80053.01_1520 <- flagPopData(popData = goodpop, labData = goodlab,
-                                       ListOfDataFrames = mspK_80053.01_1520_gt20);
-popData_K_80069_1520 <- flagPopData(popData = goodpop, labData = goodlab,
-                                    ListOfDataFrames = mspK_80069_1520_gt20);
-# Final dataframe for K tests 116 rows or patients to test on
-popData_K <- rbind(popData_K_80048_1520, popData_K_80069_1520, popData_K_80053.01_1520);
+# popData_K_80048_1520 <- flagPopData(popData = goodpop, labData = goodlab,
+#                                     ListOfDataFrames = mspK_80048_1520_gt20);
+# popData_K_80053.01_1520 <- flagPopData(popData = goodpop, labData = goodlab,
+#                                        ListOfDataFrames = mspK_80053.01_1520_gt20);
+# popData_K_80069_1520 <- flagPopData(popData = goodpop, labData = goodlab,
+#                                     ListOfDataFrames = mspK_80069_1520_gt20);
+popData_Creat_80048 <- flagPopData(goodpop, goodlab, Creat_80048_1523_gt20);
+popData_Creat_80053.01 <- flagPopData(goodpop, goodlab, Creat_80053.01_1523_gt20);
+popData_Creat <- rbind(popData_Creat_80048, popData_Creat_80053.01);
+popData_K_80048 <- flagPopData(goodpop, goodlab, K_80048_1520_gt20);
+popData_K_80053.01 <- flagPopData(goodpop, goodlab, K_80053.01_1520_gt20);
+popData_K_80069 <- flagPopData(goodpop, goodlab, K_80069_1520_gt20);
 
-prop.table(table(train$INT_FLAG))
+# # Final dataframe for K tests 116 rows or patients to test on
+popData_K <- rbind(popData_K_80048, popData_K_80069, popData_K_80053.01);
+
+
+data <- popData_K;
+prop.table(table(data$INT_FLAG));
 
 # Dividing into test (25%) and train (75%) sets - from stackoverflow
-smp_size <- floor(0.75 * nrow(popData_K))
+smp_size <- floor(0.75 * nrow(data));
 ## set the seed to make your partition reproductible
-set.seed(42)
-train_ind <- sample(seq_len(nrow(popData_K)), size = smp_size)
-train <- popData_K[train_ind, ]
-test <- popData_K[-train_ind, ]
+set.seed(sseed);
+train_ind <- sample(seq_len(nrow(data)), size = smp_size);
+train <- data[train_ind, ];
+test <- data[-train_ind, ];
+
+# Exploring data
+attach(data);
+prop.table(table(data$INT_FLAG));
+
+# Separating AGE into decade bins for classifier
+data$AGE2[data$AGE < 30 & data$AGE >= 20] <- '20-30';
+data$AGE2[data$AGE < 40 & data$AGE >= 30] <- '30-40';
+data$AGE2[data$AGE < 50 & data$AGE >= 40] <- '40-50';
+data$AGE2[data$AGE < 60 & data$AGE >= 50] <- '50-60';
+data$AGE2[data$AGE < 70 & data$AGE >= 60] <- '60-70';
+data$AGE2[data$AGE < 80 & data$AGE >= 70] <- '70-80';
+data$AGE2[data$AGE < 90 & data$AGE >= 80] <- '80-90';
+# attach(data);
+aggregate(data$INT_FLAG ~ data$AGE2, data=data, FUN=function(x) {sum(x)/length(x)});
+# data$AGE2 data$INT_FLAG
+# 1     20-30     0.6666667
+# 2     30-40     0.5000000
+# 3     40-50     0.2222222
+# 4     50-60     0.5000000
+# 5     60-70     0.4838710
+# 6     70-80     0.2647059
+# 7     80-90     0.5500000
+aggregate(data$INT_FLAG ~ data$SEX_C, data=data, FUN=function(x) {sum(x)/length(x)});
+# data$SEX_C data$INT_FLAG
+# 1          1     0.5000000
+# 2          2     0.3636364
+fit <- rpart(data$INT_FLAG ~ data$SEX_C + data$AGE2, data=data, method="class");
+fancyRpartPlot(fit);
+summary(fit)
+# Call:
+#     rpart(formula = data$INT_FLAG ~ data$SEX_C + data$AGE2, data = data,
+#           method = "class")
+# n= 116
+#
+# CP nsplit rel error   xerror      xstd
+# 1 0.06122449      0 1.0000000 1.000000 0.1085701
+# 2 0.02040816      3 0.8163265 1.102041 0.1096397
+# 3 0.01000000      5 0.7755102 1.000000 0.1085701
+#
+# Variable importance
+# data$AGE2 data$SEX_C
+# 94          6
+#
+# Node number 1: 116 observations,    complexity param=0.06122449
+# predicted class=0  expected loss=0.4224138  P(node) =1
+# class counts:    67    49
+# probabilities: 0.578 0.422
+# left son=2 (43 obs) right son=3 (73 obs)
+# Primary splits:
+#     data$AGE2  splits as  RRLRRLR, improve=3.586120, (1 missing)
+# data$SEX_C < 1.5 to the right, improve=1.057994, (0 missing)
+#
+# Node number 2: 43 observations
+# predicted class=0  expected loss=0.255814  P(node) =0.3706897
+# class counts:    32    11
+# probabilities: 0.744 0.256
+#
+# Node number 3: 73 observations,    complexity param=0.06122449
+# predicted class=1  expected loss=0.4794521  P(node) =0.6293103
+# class counts:    35    38
+# probabilities: 0.479 0.521
+# left son=6 (40 obs) right son=7 (33 obs)
+# Primary splits:
+#     data$SEX_C < 1.5 to the right, improve=0.3671440, (0 missing)
+# data$AGE2  splits as  RL-LL-R, improve=0.1780785, (1 missing)
+# Surrogate splits:
+#     data$AGE2 splits as  LR-LL-L, agree=0.575, adj=0.061, (0 split)
+#
+# Node number 6: 40 observations,    complexity param=0.06122449
+# predicted class=0  expected loss=0.475  P(node) =0.3448276
+# class counts:    21    19
+# probabilities: 0.525 0.475
+# left son=12 (30 obs) right son=13 (10 obs)
+# Primary splits:
+#     data$AGE2 splits as  LL-LL-R, improve=1.35, (0 missing)
+#
+# Node number 7: 33 observations,    complexity param=0.02040816
+# predicted class=1  expected loss=0.4242424  P(node) =0.2844828
+# class counts:    14    19
+# probabilities: 0.424 0.576
+# left son=14 (22 obs) right son=15 (11 obs)
+# Primary splits:
+#     data$AGE2 splits as  RR-RL-L, improve=0.9101732, (1 missing)
+#
+# Node number 12: 30 observations
+# predicted class=0  expected loss=0.4  P(node) =0.2586207
+# class counts:    18    12
+# probabilities: 0.600 0.400
+#
+# Node number 13: 10 observations
+# predicted class=1  expected loss=0.3  P(node) =0.0862069
+# class counts:     3     7
+# probabilities: 0.300 0.700
+#
+# Node number 14: 22 observations,    complexity param=0.02040816
+# predicted class=0  expected loss=0.5  P(node) =0.1896552
+# class counts:    11    11
+# probabilities: 0.500 0.500
+# left son=28 (10 obs) right son=29 (12 obs)
+# Primary splits:
+#     data$AGE2 splits as  ----R-L, improve=0.221645, (1 missing)
+#
+# Node number 15: 11 observations
+# predicted class=1  expected loss=0.2727273  P(node) =0.09482759
+# class counts:     3     8
+# probabilities: 0.273 0.727
+#
+# Node number 28: 10 observations
+# predicted class=0  expected loss=0.4  P(node) =0.0862069
+# class counts:     6     4
+# probabilities: 0.600 0.400
+#
+# Node number 29: 12 observations
+# predicted class=1  expected loss=0.4166667  P(node) =0.1034483
+# class counts:     5     7
+# probabilities: 0.417 0.583
+
