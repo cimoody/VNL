@@ -3,14 +3,12 @@
 ## Created by Cristina I Moody
 ## June 2015
 
-# Installing Gaussian Process Library
-install.packages("tgp");
+# Installing Libraries
+source(file = "librariesVNL.R");
+# # Gaussian Process Library
 library(tgp);
-
-# Installing package to compare the two data tables
-install.packages("compare");
+# # Installing package to compare the two data tables
 library(compare);
-install.packages("plyr");
 library(plyr);
 
 ## Working directory: "C:/Users/CMoody/Desktop/workspace/VNL"

@@ -2,6 +2,25 @@
 ## Written by Cristina Moody
 ## July 2015
 
+# Installing Libraries
+source(file = "librariesVNL.R"); # if starting R for 1st time today
+
+# Installing Gaussian Process Library
+library(tgp);
+# Installing package to compare the two data tables
+library(compare);
+library(plyr);
+library(Hmisc);
+# Package for classification
+library(rpart);
+library(rattle);
+library(rpart.plot);
+library(RColorBrewer);
+library(randomForest);
+library(party);
+# Additional package for categorical graphics
+library(vcd);
+
 dDir <- "E:/VNL\ Data\ from\ Joe/";
 
 # FUNCTION TO CHANGE FACTOR TO NUMERIC

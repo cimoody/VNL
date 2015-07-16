@@ -2,15 +2,13 @@
 ## Written by Cristina Moody
 ## July 2015
 
-# Installing Gaussian Process Library
-install.packages("tgp");
+# Installing Libraries
+source(file = "librariesVNL.R"); # If starting R for 1st time, else do below
+# # Gaussian Process Library
 library(tgp);
-# Installing package to compare the two data tables
-install.packages("compare");
+# # Installing package to compare the two data tables
 library(compare);
-install.packages("plyr");
 library(plyr);
-install.packages("Hmisc", dependencies = T);
 library(Hmisc);
 
 # Preprosessing files - must be done manually for each data set
