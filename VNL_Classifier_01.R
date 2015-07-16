@@ -112,10 +112,31 @@ flagPopData <- function(popData, labData, ListOfDataFrames) {
                                        "INT_FLAG" = ListOfDataFrames[[j]]$INT_FLAG[1],
                                        "ENC_CSN_ID" = labData[
                                            which(labData$PAT_ID
-                                                 ==ListOfDataFrames[[j]]$PAT_ID[1]), "ENC_CSN_ID"][1]) );
+                                                 ==ListOfDataFrames[[j]]$PAT_ID[1]),
+                                           "ENC_CSN_ID"][1]) );
         newPop <- rbind(newPop, popData[which(popData$ENC_CSN_ID==patFlag$ENC_CSN_ID[j]),] );
         # newPop$INT_FLAG <- patFlag$INT_FLAG[j];
     }
-    newPop <- cbind(newPop, patFlag$INT_FLAG);
+    newPop <- cbind(newPop, "INT_FLAG"=patFlag$INT_FLAG);
     return(newPop);
 }
+
+# Creating a dataframe with the interesting flag for K tests
+popData_K_80048_1520 <- flagPopData(popData = goodpop, labData = goodlab,
+                                    ListOfDataFrames = mspK_80048_1520_gt20);
+popData_K_80053.01_1520 <- flagPopData(popData = goodpop, labData = goodlab,
+                                       ListOfDataFrames = mspK_80053.01_1520_gt20);
+popData_K_80069_1520 <- flagPopData(popData = goodpop, labData = goodlab,
+                                    ListOfDataFrames = mspK_80069_1520_gt20);
+# Final dataframe for K tests 116 rows or patients to test on
+popData_K <- rbind(popData_K_80048_1520, popData_K_80069_1520, popData_K_80053.01_1520);
+
+prop.table(table(train$INT_FLAG))
+
+# Dividing into test (25%) and train (75%) sets - from stackoverflow
+smp_size <- floor(0.75 * nrow(popData_K))
+## set the seed to make your partition reproductible
+set.seed(42)
+train_ind <- sample(seq_len(nrow(popData_K)), size = smp_size)
+train <- popData_K[train_ind, ]
+test <- popData_K[-train_ind, ]
