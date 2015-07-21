@@ -84,11 +84,12 @@ returnProperTime <- function(originalListOfDataFrames) {
     adjustedList <- addProperTime(ListOfDataFrames, properTime);
     for (j in 1:length(adjustedList)) {
         if (is.null(adjustedList[[j]]$PROPER_TIME)) {
+            # ALigns not interesting patients to start at t0
             adjustedList[[j]]$PROPER_TIME <-
                 adjustedList[[j]]$ORDERING_DATE -
                 adjustedList[[j]]$ORDERING_DATE[1];
                     # which.max(adjustedList[[j]]$ORD_NUM_VALUE)]; # Aligning maximums, not what I wanted.
-            adjustedList[[j]]$INT_FLAG <- 0;
+            adjustedList[[j]]$INT_FLAG <- 0; # Adding INT_FLAG = 0 (not interesting)
         }
         else {
             adjustedList[[j]]$INT_FLAG <- 1;
