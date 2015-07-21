@@ -28,3 +28,4 @@ library(party);
 # Additional package for categorical graphics
 install.packages("vcd");
 library(vcd);
+
