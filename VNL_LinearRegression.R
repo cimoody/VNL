@@ -36,7 +36,19 @@ for (i in 1:length(listfiles)) {
 # To answer A), I need time i) for PROPER_TIME and time iii) for ORDERING_DATE.
 # To answer B)
 
-# Getting matrix for regression from lists
-getTrainMatrix <- function(){
+# Getting matrix for 'meta' patient for regression from lists
+getTrainMatrix <- function(originalListOfDataFrames){
+    # Function returnProperTime() from alignThreshold.R
+    ListOfDataFrames <- returnProperTime(originalListOfDataFrames);
+    # Creating giant dataframe of all the dataframes
+    TrainDF <- getTrainDF(ListOfDataFrames);
+}
 
+# Creating giant dataframe of all the dataframes
+getTrainDF <- function(ListOfDataFrames){
+    TrainDF <- data.frame();
+    for (j in 1:length(ListOfDataFrames)) {
+        TrainDF <- rbind(ListOfDataFrames[[j]], TrainDF);
+    }
+    return(TrainDF);
 }
