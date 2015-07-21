@@ -38,10 +38,12 @@ for (i in 1:length(listfiles)) {
 
 # Getting matrix for 'meta' patient for regression from lists
 getTrainMatrix <- function(originalListOfDataFrames){
-    # Function returnProperTime() from alignThreshold.R
+    # Function returnProperTime() from alignThreshold.R - returns PROPER_TIME and INT_FLAG
     ListOfDataFrames <- returnProperTime(originalListOfDataFrames);
     # Creating giant dataframe of all the dataframes
     TrainDF <- getTrainDF(ListOfDataFrames);
+    # Subset TrainDF into only interesting cases (INT_FLAG==1)
+    TrainDF <- TrainDF[TrainDF$INT_FLAG==1, ];
 }
 
 # Creating giant dataframe of all the dataframes
@@ -51,4 +53,12 @@ getTrainDF <- function(ListOfDataFrames){
         TrainDF <- rbind(ListOfDataFrames[[j]], TrainDF);
     }
     return(TrainDF);
+}
+
+testf <- function(testList){
+    m <- c();
+    for (j in 1:length(testList)) {
+        m[j] <- sprintf("List %s has %s rows.", j, nrow(testList[[j]]));
+    }
+    return(m);
 }
