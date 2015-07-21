@@ -95,12 +95,12 @@ flag$INT_FLAG <- as.numeric((flag$ORD_NUM_VALUE < flag$REF_LOW)
 # classifier work from getMeanSDListDataFrames() and from returnProperTime()
 # functions from code in alignThreshold.R .
 
-# Loading all files - it won't work it a function :(
+# Loading all files - it won't work as a function :(
 # loadfiles <- function() {
-    listfiles <- list.files(path = dDir, pattern = "\\.rda");
-    for (i in 1:length(listfiles)) {
-        load(file = sprintf("%s%s", dDir, listfiles[i]));
-    }
+listfiles <- list.files(path = dDir, pattern = "\\.rda");
+for (i in 1:length(listfiles)) {
+    load(file = sprintf("%s%s", dDir, listfiles[i]));
+}
 # }
 # loadfiles();
 # Function to get flag value from list of dataframes returned from returnProperTime()
