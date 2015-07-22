@@ -4,7 +4,7 @@
 ## July 2015
 
 # Installing Libraries
-source(file = "librariesVNL.R");# if starting R for 1st time today
+# source(file = "librariesVNL.R");# if starting R for 1st time today
 
 # Installing Gaussian Process Library
 library(tgp);
