@@ -3,7 +3,7 @@
 ## July 2015
 
 # Installing Libraries
-source(file = "librariesVNL.R"); # if starting R for 1st time today
+# source(file = "librariesVNL.R"); # if starting R for 1st time today
 
 # Installing Gaussian Process Library
 library(tgp);
@@ -84,11 +84,10 @@ returnProperTime <- function(originalListOfDataFrames) {
     adjustedList <- addProperTime(ListOfDataFrames, properTime);
     for (j in 1:length(adjustedList)) {
         if (is.null(adjustedList[[j]]$PROPER_TIME)) {
-            # ALigns not interesting patients to start at 0
             adjustedList[[j]]$PROPER_TIME <-
                 adjustedList[[j]]$ORDERING_DATE -
-                adjustedList[[j]]$ORDERING_DATE[1];
-                    # which.max(adjustedList[[j]]$ORD_NUM_VALUE)]; # Aligning maximums, not what I wanted.
+                # adjustedList[[j]]$ORDERING_DATE[1]; # ALigns not interesting patients to start at 0
+                adjustedList[[j]]$ORDERING_DATE[which.max(adjustedList[[j]]$ORD_NUM_VALUE)]; # Aligning maximums, not what I wanted.
             adjustedList[[j]]$INT_FLAG <- 0; # Adding INT_FLAG = 0 (not interesting)
         }
         else {
