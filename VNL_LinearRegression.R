@@ -5,6 +5,10 @@
 
 # Installing Libraries
 source(file = "librariesVNL.R");# if starting R for 1st time today
+# Libraries
+library(lmtest);
+library(sandwich);
+library(car);
 
 # Working directory: "C:/Users/CMoody/Desktop/workspace/VNL"
 wDir <- sprintf("%s%s", getwd(), "/");
@@ -40,10 +44,17 @@ for (i in 1:length(listfiles)) {
 getTrainMatrix <- function(originalListOfDataFrames){
     # Function returnProperTime() from alignThreshold.R - returns PROPER_TIME and INT_FLAG
     ListOfDataFrames <- returnProperTime(originalListOfDataFrames);
+    # Creating ORDERING_DATE2
+    ListOfDataFrames <- addORDDATE2(ListOfDataFrames);
     # Creating giant dataframe of all the dataframes
     TrainDF <- getTrainDF(ListOfDataFrames);
     # Subset TrainDF into only interesting cases (INT_FLAG==1)
     TrainDF <- TrainDF[TrainDF$INT_FLAG==1, ];
+    # Linear regression package cannot use days, so changing to numeric
+    TrainDF$PROPER_TIME <- as.numeric(TrainDF$PROPER_TIME);
+    TrainDF$ORDERING_DATE2 <- as.numeric(TrainDF$ORDERING_DATE2);
+    # return final dataframe
+    return(TrainDF);
 }
 
 # Creating giant dataframe of all the dataframes
@@ -55,6 +66,7 @@ getTrainDF <- function(ListOfDataFrames){
     return(TrainDF);
 }
 
+# function to get total number of rows in the data frames in a list
 testf <- function(testList){
     m <- c();
     for (j in 1:length(testList)) {
@@ -62,3 +74,24 @@ testf <- function(testList){
     }
     return(m);
 }
+
+# Function to create ORDERING_DATE2
+addORDDATE2 <- function(ListOfDataFrames) {
+    for (j in 1:length(ListOfDataFrames)){
+        ListOfDataFrames[[j]]$ORDERING_DATE2 <- ListOfDataFrames[[j]]$ORDERING_DATE - ListOfDataFrames[[j]]$ORDERING_DATE[1];
+    }
+    return(ListOfDataFrames);
+}
+
+# First linear regression
+K_80048_1520_reg1 <- getTrainMatrix(K_80048_1520_gt20);
+reg1 <- lm(PROPER_TIME ~ ORD_NUM_VALUE + ORDERING_DATE2 + COMPONTENT_ID,
+           data = K_80048_1520_reg1);
+reg1$robse <- vcovHC(reg1, type = "HC1");
+coeftest(reg1, reg1$robse);
+prestige_hat <- fitted(reg1); # predicted values
+as.data.frame(prestige_hat);
+prestige_resid <- residuals(reg1); # residuals
+as.data.frame(prestige_resid);
+residualPlots(reg1);
+avPlots(reg1, id.n = 2, id.cex = 0.7);
