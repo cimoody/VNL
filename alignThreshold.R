@@ -84,7 +84,7 @@ returnProperTime <- function(originalListOfDataFrames) {
     adjustedList <- addProperTime(ListOfDataFrames, properTime);
     for (j in 1:length(adjustedList)) {
         if (is.null(adjustedList[[j]]$PROPER_TIME)) {
-            # ALigns not interesting patients to start at t0
+            # ALigns not interesting patients to start at 0
             adjustedList[[j]]$PROPER_TIME <-
                 adjustedList[[j]]$ORDERING_DATE -
                 adjustedList[[j]]$ORDERING_DATE[1];
