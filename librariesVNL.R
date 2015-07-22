@@ -29,3 +29,6 @@ library(party);
 install.packages("vcd");
 library(vcd);
 
+library(lmtest);
+library(sandwich);
+library(car);
