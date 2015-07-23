@@ -48,6 +48,9 @@ getTrainMatrix <- function(originalListOfDataFrames){
     ListOfDataFrames <- getMeanSDListDataFrames(ListOfDataFrames);
     # Creating ORDERING_DATE2
     ListOfDataFrames <- addORDDATE2(ListOfDataFrames);
+    # Starting patients that do not cross threshold at random
+    # negative days between 6 months and 2 years before threshold
+    ListOfDataFrames <- startPTIME(ListOfDataFrames);
     # Creating giant dataframe of all the dataframes
     TrainDF <- getTrainDF(ListOfDataFrames);
 #     # Subset TrainDF into only interesting cases (INT_FLAG==1) # Oleg said to remove
@@ -91,15 +94,26 @@ addORDDATE2 <- function(ListOfDataFrames) {
     return(ListOfDataFrames);
 }
 
+# Function to start PROPER_TIME for INT_FLAG==0 at some random negative time before 100 days
+startPTIME <- function(ListOfDataFrames){
+    x <- sample(183:731, length(ListOfDataFrames), replace = F);
+    for (j in 1:length(ListOfDataFrames)){
+        if (ListOfDataFrames[[j]]$PROPER_TIME[1] == 0)
+            ListOfDataFrames[[j]]$PROPER_TIME <- as.numeric(
+                ListOfDataFrames[[j]]$PROPER_TIME) - x[j]
+    }
+    return(ListOfDataFrames);
+}
+
 # First linear regression
 K_80048_1520_reg <- getTrainMatrix(K_80048_1520_gt20);
 # Don't care for regression about what happens
 # after PROPER_TIME==1 (day after threshold event)
 K_80048_1520_reg <- K_80048_1520_reg[K_80048_1520_reg$PROPER_TIME < 1,]
-varsK_plot <- c("PROPER_TIME", "ORD_NUM_VALUE", "ORDERING_DATE2");
+varsK_plot <- c("PROPER_TIME", "ORD_NUM_VALUE", "ORDERING_DATE2", "INT_FLAG");
 K_plot <- K_80048_1520_reg[varsK_plot];
 svg("Potassium_variables.svg", width = 12, height = 8);
-plot(K_plot);
+plot(K_plot, pch = (K_plot$INT_FLAG+2));
 dev.off();
 hist(K_plot$PROPER_TIME);
 hist(K_plot$ORDERING_DATE2);
@@ -108,24 +122,7 @@ hist(K_plot$ORD_NUM_VALUE);
 reg1 <- lm(PROPER_TIME ~ ORD_NUM_VALUE + ORDERING_DATE2, #+ COMPONENT_ID,
            data = K_80048_1520_reg);
 summary(reg1);
-# Call:
-#     lm(formula = PROPER_TIME ~ ORD_NUM_VALUE + ORDERING_DATE2, data = K_80048_1520_reg)
-#
-# Residuals:
-#     Min      1Q  Median      3Q     Max
-# -34.891  -3.076   1.696   4.719  11.517
-#
-# Coefficients:
-#     Estimate Std. Error t value Pr(>|t|)
-# (Intercept)    -23.03290    1.77693 -12.962  < 2e-16 ***
-#     ORD_NUM_VALUE    3.57032    0.44283   8.063 2.21e-15 ***
-#     ORDERING_DATE2   0.12516    0.03071   4.075 4.99e-05 ***
-#     ---
-#     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-# Residual standard error: 6.928 on 961 degrees of freedom
-# Multiple R-squared:  0.08829,	Adjusted R-squared:  0.08639
-# F-statistic: 46.53 on 2 and 961 DF,  p-value: < 2.2e-16
+
 reg1$robse <- vcovHC(reg1, type = "HC1");
 coeftest(reg1, reg1$robse);
 qqPlot(reg1, id.n = 3);
@@ -139,28 +136,7 @@ avPlots(reg1, id.n = 2, id.cex = 0.7);
 reg2 <- glm(PROPER_TIME ~ ORD_NUM_VALUE + ORDERING_DATE2, #+ COMPONENT_ID,
            data = K_80048_1520_reg);
 summary(reg2);
-# Call:
-#     glm(formula = PROPER_TIME ~ ORD_NUM_VALUE + ORDERING_DATE2, data = K_80048_1520_reg)
-#
-# Deviance Residuals:
-#     Min       1Q   Median       3Q      Max
-# -34.891   -3.076    1.696    4.719   11.517
-#
-# Coefficients:
-#     Estimate Std. Error t value Pr(>|t|)
-# (Intercept)    -23.03290    1.77693 -12.962  < 2e-16 ***
-#     ORD_NUM_VALUE    3.57032    0.44283   8.063 2.21e-15 ***
-#     ORDERING_DATE2   0.12516    0.03071   4.075 4.99e-05 ***
-#     ---
-#     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-# (Dispersion parameter for gaussian family taken to be 47.9983)
-#
-# Null deviance: 50593  on 963  degrees of freedom
-# Residual deviance: 46126  on 961  degrees of freedom
-# AIC: 6472.5
-#
-# Number of Fisher Scoring iterations: 2
+
 reg2$robse <- vcovHC(reg2, type = "HC1");
 coeftest(reg2, reg2$robse);
 threshold2_hat <- fitted(reg2); # predicted values
@@ -170,4 +146,18 @@ as.data.frame(threshold2_resid);
 residualPlots(reg2);
 avPlots(reg2, id.n = 2, id.cex = 0.6, col = "blue");
 
+# Testing regressions
+K_Test <- K_80048_1520_reg[sample(nrow(K_80048_1520_reg), 300),];
+x1 <-predict(reg1, K_Test, interval="prediction");
+plot(K_Test$PROPER_TIME, K_Test$ORD_NUM_VALUE)
+x1 <- as.data.frame(x1)
+varx2 <- c("PROPER_TIME", "ORD_NUM_VALUE", "ORDERING_DATE2", "INT_FLAG");
+x2 <- K_Test[varx2];
+x2 <- cbind(x2, x1);
+t1 <- x2$INT_FLAG + 4;
+plot(x2$PROPER_TIME, x2$fit, pch = t1);
+with(data = x2, expr = errbar(x2$PROPER_TIME, x2$fit, fit + upr, fit - lwr,
+                              pch = '', add = T, cap = 0.02));
 
+# New ideas
+# Creates a training dataframe that will keep track of each point in time
