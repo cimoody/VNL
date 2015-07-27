@@ -151,9 +151,7 @@ prop.table(table(data$INT_FLAG));
 smp_size <- floor(0.75 * nrow(data));
 ## set the seed to make your partition reproductible
 set.seed(sseed);
-train_ind <- sample(seq_len(nrow(data)), size = smp_size);
-train <- data[train_ind, ];
-test <- data[-train_ind, ];
+
 
 # Exploring data
 attach(data);
@@ -167,8 +165,13 @@ data$AGE2[data$AGE < 60 & data$AGE >= 50] <- '50-60';
 data$AGE2[data$AGE < 70 & data$AGE >= 60] <- '60-70';
 data$AGE2[data$AGE < 80 & data$AGE >= 70] <- '70-80';
 data$AGE2[data$AGE < 90 & data$AGE >= 80] <- '80-90';
+# Separating into a train and test set
+train_ind <- sample(seq_len(nrow(data)), size = smp_size);
+traindata <- data[train_ind, ];
+testdata <- data[-train_ind, ];
+
 # attach(data);
-aggregate(data$INT_FLAG ~ data$AGE2, data=data, FUN=function(x) {sum(x)/length(x)});
+aggregate(INT_FLAG ~ AGE2, data=traindata, FUN=function(x) {sum(x)/length(x)});
 # data$AGE2 data$INT_FLAG
 # 1     20-30     0.6666667
 # 2     30-40     0.5000000
@@ -177,11 +180,11 @@ aggregate(data$INT_FLAG ~ data$AGE2, data=data, FUN=function(x) {sum(x)/length(x
 # 5     60-70     0.4838710
 # 6     70-80     0.2647059
 # 7     80-90     0.5500000
-aggregate(data$INT_FLAG ~ data$SEX_C, data=data, FUN=function(x) {sum(x)/length(x)});
+aggregate(INT_FLAG ~ SEX_C, data=traindata, FUN=function(x) {sum(x)/length(x)});
 # data$SEX_C data$INT_FLAG
 # 1          1     0.5000000
 # 2          2     0.3636364
-fit <- rpart(data$INT_FLAG ~ data$SEX_C + data$AGE2, data=data, method="class");
+fit <- rpart(INT_FLAG ~ SEX_C + AGE2, data=traindata, method="class");
 fancyRpartPlot(fit);
 summary(fit)
 # Call:
@@ -271,4 +274,6 @@ summary(fit)
 # predicted class=1  expected loss=0.4166667  P(node) =0.1034483
 # class counts:     5     7
 # probabilities: 0.417 0.583
+pred <- predict(fit, testdata);
+mean(pred == testdata[ , "INT_FLAG"]);
 
