@@ -24,10 +24,14 @@ library(vcd);
 dDir <- "E:/VNL\ Data\ from\ Joe/";
 
 # FUNCTION TO CHANGE FACTOR TO NUMERIC
-f2n <- function(val) {val <- as.numeric(as.character(val));}
+f2n <- function(val) {
+    # FUNCTION TO CHANGE FACTOR TO NUMERIC
+    val <- as.numeric(as.character(val));
+}
 
 # Subset into a list that only contains tests that start in a normal range.
 normalStart <- function(ListOfDataFrames) {
+    # Subset into a list that only contains tests that start in a normal range.
     x <- list();
     for(i in 1:length(ListOfDataFrames)) {
         if ( (ListOfDataFrames[[i]]$ORD_NUM_VALUE[1] <= f2n(ListOfDataFrames[[i]]$REFERENCE_HIGH[1])) &
@@ -41,6 +45,7 @@ normalStart <- function(ListOfDataFrames) {
 # Function to get choosen t0 (when test first crosses reference_high)
 # from each dataframe in list
 t0Finder <- function(ListOfDataFrames){
+    # Function to get choosen t0 (when test first crosses reference_high) from each dataframe in list
     t0list <- data.frame();
     for (i in 1:length(ListOfDataFrames)){
         if (is.null(nrow(ListOfDataFrames[[i]]))){print(i); break();}
@@ -64,6 +69,7 @@ t0Finder <- function(ListOfDataFrames){
 
 # FUNCTION TO ADD PROPERTIME TO EACH DATAFRAME IN LIST
 addProperTime <- function(ListOfDataFrames, t0DataFrame){
+    # ADD PROPERTIME TO EACH DATAFRAME IN LIST
     for (i in 1:nrow(t0DataFrame)) {
         for (j in 1:length(ListOfDataFrames)){
             if ( ListOfDataFrames[[j]]$PAT_ID[1]==t0DataFrame$PAT_ID[i] ){
@@ -78,6 +84,7 @@ addProperTime <- function(ListOfDataFrames, t0DataFrame){
 
 # Function to return a dataframe with the proper time
 returnProperTime <- function(originalListOfDataFrames) {
+    # Return a dataframe with the proper time
     ListOfDataFrames <- normalStart(originalListOfDataFrames);
     if (length(ListOfDataFrames)==0) {return(0);}
     properTime <- t0Finder(ListOfDataFrames);
@@ -103,7 +110,8 @@ returnProperTime <- function(originalListOfDataFrames) {
 # Not sure how to do this yet. Return to it on Monday - ask David for advice.
 
 # Function to plot everything with new proper time
-makePlot2 <- function(ListOfDataFrames) {
+makePlot2 <- function(ListOfDataFrames, shade) {
+    # Plot everything with new proper time
     svg(sprintf("Lab_by_day_%s_%s_gt_%g.svg",
                 ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
                 ListOfDataFrames[[1]]$MIN_RAW_LABS), width = 7, height = 5);
@@ -120,7 +128,8 @@ makePlot2 <- function(ListOfDataFrames) {
     co <- rainbow(length(ListOfDataFrames));
     if (length(ListOfDataFrames[[i]]$PROPER_TIME)==length(ListOfDataFrames[[i]]$ORD_NUM_VALUE)){
         plot(ListOfDataFrames[[i]]$PROPER_TIME, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
-             col = co[i], type = "o", panel.first = grid(),
+             bg = alpha(co[i], shade), col = alpha(co[i], shade+0.1), pch = 21,
+             type = "o", panel.first = grid(),
              xlim = range(min(xmin), max(xmax)),
              ylim = range(min(ymin), max(ymax)),
              xlab = "Time (days)",
@@ -134,7 +143,8 @@ makePlot2 <- function(ListOfDataFrames) {
         # axis.Date(side = 1, x = as.Date(ListOfDataFrames[[1]]$PROPER_TIME));
         for (i in 1:length(ListOfDataFrames)){
             lines(ListOfDataFrames[[i]]$PROPER_TIME, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
-                  col = co[i], type = "b", panel.first = grid(),
+                  bg = alpha(co[i], shade), col = alpha(co[i], shade+0.1), pch = 21,
+                  type = "b", panel.first = grid(),
                   xlim = range(min(xmin), max(xmax)),
                   ylim = range(min(ymin), max(ymax)),
                   xlab = "Time (days)",
@@ -158,6 +168,7 @@ makePlot2 <- function(ListOfDataFrames) {
 
 # Function to save each table to a csv file
 makeCSV <- function(ListOfDataFrames) {
+    # Function to save each table to a csv file
     for (j in 1:length(ListOfDataFrames)) {
         write.csv(ListOfDataFrames[[j]],
                   file = sprintf("E:/data_for_Oleg/Test__%s__patient_%s.csv",
@@ -169,6 +180,7 @@ makeCSV <- function(ListOfDataFrames) {
 
 # Function to get the standard deviation, but return 0 if vector is of length 1.
 getSD <- function(val) {
+    # Function to get the standard deviation, but return 0 if vector is of length 1.
     if (is.na(sd(val))) {
         return(0);
     } else {
@@ -179,6 +191,7 @@ getSD <- function(val) {
 # Function to go through list of dataframes and
 # replace repeated labs with mean and add standard deviation column
 getMeanSDListDataFrames <- function(ListOfDataFrames) {
+    # Function to go through list of dataframes and replace repeated labs with mean and add standard deviation column
     # Create new list so not to overwrite original
     newListOfDataFrames <- ListOfDataFrames;
     for (j in  1:length(ListOfDataFrames)){
@@ -213,7 +226,8 @@ getMeanSDListDataFrames <- function(ListOfDataFrames) {
 
 # Function to plot everything with
 # new mean for repeated labs and error bar of standard deviation
-makePlot3 <- function(ListOfDataFrames) {
+makePlot3 <- function(ListOfDataFrames, shade) {
+    # Plot everything with new mean for repeated labs and error bar of standard deviation
     svg(sprintf("Mean_lab_by_day_%s_%s_gt_%g.svg",
                 ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
                 ListOfDataFrames[[1]]$MIN_RAW_LABS), width = 7, height = 5);
@@ -233,7 +247,8 @@ makePlot3 <- function(ListOfDataFrames) {
     if (length(ListOfDataFrames[[i]]$PROPER_TIME)==length(ListOfDataFrames[[i]]$ORD_NUM_VALUE)){
         # Plot
         plot(ListOfDataFrames[[i]]$PROPER_TIME, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
-             col = co[i], type = "o", panel.first = grid(),
+             bg = alpha(co[i], shade), col = alpha(co[i], shade+0.1), pch = 21,
+             type = "o", panel.first = grid(),
              xlim = range(min(xmin), max(xmax)),
              ylim = range(min(ymin), max(ymax)),
              xlab = "Time (days)",
@@ -244,7 +259,7 @@ makePlot3 <- function(ListOfDataFrames) {
         with(data = ListOfDataFrames[[i]],
              expr = errbar(PROPER_TIME, ORD_NUM_VALUE, ORD_NUM_VALUE + SD_ORD_VAL,
                            ORD_NUM_VALUE - SD_ORD_VAL, pch = "", add = T,
-                           errbar.col = co[i], cap = 0.02));
+                           errbar.col = alpha(co[i], shade+0.2), cap = 0.02));
         # Reference low
         abline(h = as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])), col = "red");
         # Reference high
@@ -252,7 +267,8 @@ makePlot3 <- function(ListOfDataFrames) {
         # axis.Date(side = 1, x = as.Date(ListOfDataFrames[[1]]$PROPER_TIME));
         for (i in 1:length(ListOfDataFrames)){
             lines(ListOfDataFrames[[i]]$PROPER_TIME, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
-                  col = co[i], type = "b", panel.first = grid(),
+                  bg = alpha(co[i], shade), col = alpha(co[i], shade+0.1), pch = 21,
+                  type = "b", panel.first = grid(),
                   xlim = range(min(xmin), max(xmax)),
                   ylim = range(min(ymin), max(ymax)),
                   xlab = "Time (days)",
@@ -263,7 +279,7 @@ makePlot3 <- function(ListOfDataFrames) {
             with(data = ListOfDataFrames[[i]],
                  expr = errbar(PROPER_TIME, ORD_NUM_VALUE, ORD_NUM_VALUE + SD_ORD_VAL,
                                ORD_NUM_VALUE - SD_ORD_VAL, pch = "", add = T,
-                               errbar.col = co[i], cap = 0.02));
+                               errbar.col = alpha(co[i], shade+0.2), cap = 0.02));
             # Reference low
             abline(h = as.numeric(as.character(ListOfDataFrames[[i]]$REFERENCE_LOW[1])), col = "red");
             # Reference high

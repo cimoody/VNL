@@ -51,6 +51,8 @@ cutoff <- 50;
 
 ## FUNCTION THAT RETURNS LAB RESULT AND ORDERING DATA FOR ANY GIVEN LAB
 getResultDate <- function(cutoff, tID){
+    # RETURNS LAB RESULT AND ORDERING DATA FOR ANY GIVEN LAB
+    #
     # Make a variable that is a combination of ENC_CSN_ID, CPT_CODE, COMPONENT_ID
     # CPT_CODE & COMPONENT_ID are the lab
     labnames <- paste(goodlab$ENC_CSN_ID, goodlab$CPT_CODE, goodlab$COMPONENT_ID, sep = "_");
@@ -133,6 +135,7 @@ getResultDate <- function(cutoff, tID){
 
 ## FUNCTION THAT PLOTS ALL ECN_CSN_ID FOR ONE LAB FROM LIST RETURNED FROM getResultDate
 makePlot <- function(ListOfDataFrames, shade) {
+    # PLOTS ALL ECN_CSN_ID FOR ONE LAB FROM LIST RETURNED FROM getResultDate
     svg(sprintf("Lab_%s_%s_gt_%g.svg",
                 ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
                 ListOfDataFrames[[1]]$MIN_RAW_LABS, width = 7, height = 5));

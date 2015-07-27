@@ -107,7 +107,9 @@ for (i in 1:length(listfiles)) {
 # or form getMeanSDListDataFrames() and add flag to goodpop data. Classifier
 # is looking for features from population data that is 'time-independent'.
 flagPopData <- function(popData, labData, originalListOfDataFrames) {
-    newPop <- data.frame();
+    # Function to get flag value from list of dataframes returned from returnProperTime()
+    # or form getMeanSDListDataFrames() and add flag to goodpop data. Classifier
+    # is looking for features from population data that is 'time-independent'.newPop <- data.frame();
     patFlag <- data.frame();
     # Function returnProperTime() from alignThreshold.R
     ListOfDataFrames <- returnProperTime(originalListOfDataFrames);
