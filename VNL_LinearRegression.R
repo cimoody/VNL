@@ -9,6 +9,7 @@
 library(lmtest);
 library(sandwich);
 library(car);
+library(zoo);
 
 # Working directory: "C:/Users/CMoody/Desktop/workspace/VNL"
 wDir <- sprintf("%s%s", getwd(), "/");
@@ -42,6 +43,7 @@ for (i in 1:length(listfiles)) {
 
 # Getting matrix for 'meta' patient for regression from lists
 getTrainMatrix <- function(originalListOfDataFrames){
+    # Getting matrix for 'meta' patient for regression from lists
     # Function returnProperTime() from alignThreshold.R - returns PROPER_TIME and INT_FLAG
     ListOfDataFrames <- returnProperTime(originalListOfDataFrames);
     # Removing labs that are repeated on the same day and replacing with mean and sd
@@ -70,6 +72,7 @@ getTrainMatrix <- function(originalListOfDataFrames){
 
 # Creating giant dataframe of all the dataframes
 getTrainDF <- function(ListOfDataFrames){
+    # Creating giant dataframe of all the dataframes
     TrainDF <- data.frame();
     for (j in 1:length(ListOfDataFrames)) {
         TrainDF <- rbind(ListOfDataFrames[[j]], TrainDF);
@@ -79,6 +82,7 @@ getTrainDF <- function(ListOfDataFrames){
 
 # function to get total number of rows in the data frames in a list
 testf <- function(testList){
+    # function to get total number of rows in the data frames in a list
     m <- c();
     for (j in 1:length(testList)) {
         m[j] <- sprintf("List %s has %s rows.", j, nrow(testList[[j]]));
@@ -88,6 +92,7 @@ testf <- function(testList){
 
 # Function to create ORDERING_DATE2
 addORDDATE2 <- function(ListOfDataFrames) {
+    # Function to create ORDERING_DATE2
     for (j in 1:length(ListOfDataFrames)){
         ListOfDataFrames[[j]]$ORDERING_DATE2 <- ListOfDataFrames[[j]]$ORDERING_DATE - ListOfDataFrames[[j]]$ORDERING_DATE[1];
     }
@@ -96,6 +101,7 @@ addORDDATE2 <- function(ListOfDataFrames) {
 
 # Function to start PROPER_TIME for INT_FLAG==0 at some random negative time before 100 days
 startPTIME <- function(ListOfDataFrames){
+    # Function to start PROPER_TIME for INT_FLAG==0 at some random negative time before 100 days
     x <- sample(183:731, length(ListOfDataFrames), replace = F);
     for (j in 1:length(ListOfDataFrames)){
         if (ListOfDataFrames[[j]]$PROPER_TIME[1] == 0)
@@ -155,9 +161,90 @@ varx2 <- c("PROPER_TIME", "ORD_NUM_VALUE", "ORDERING_DATE2", "INT_FLAG");
 x2 <- K_Test[varx2];
 x2 <- cbind(x2, x1);
 t1 <- x2$INT_FLAG + 4;
-plot(x2$PROPER_TIME, x2$fit, pch = t1);
+plot(x2$PROPER_TIME, x2$fit, pch = t1, col = alpha("gray", 0.5));
 with(data = x2, expr = errbar(x2$PROPER_TIME, x2$fit, fit + upr, fit - lwr,
-                              pch = '', add = T, cap = 0.02));
+                              bg = alpha("gray", 0.1), col = alpha("gray", 0.1),
+                              pch = 21, add = T, cap = 0.01));
 
 # New ideas
-# Creates a training dataframe that will keep track of each point in time
+
+# Case 1 - when I do not have 10 days before the threshold
+{
+# Case 1 - when I do not have 10 days before the threshold
+#
+# Sample code from David for rearranging data.frame:
+# Populate thisDf with some sample data; keep PT as a negative-value index with some missing elements
+# And VT1 and VT2 be values or whatever
+thisDf = data.frame(PT=c(0,-1,-2,-5,-6), VT1=c(0.1,-1.1,-2.1,-5.1,-6.1), VT2=c(0.2,-1.2,-2.2,-5.2,-6.2))
+thisDf;
+# Define newDf to have the completed index in PT and just fixed values for the VT1 and VT2
+newDf = data.frame( PT =(-(0:10)), VT1=NA, VT2=NA )
+newDf;
+# What this does is reference the row space of newDf that corresponds to a row in thisDf
+# by looking at the value of PT in both of them.
+newDf[ newDf$PT %in% thisDf$PT, ] = thisDf[ thisDf$PT %in% newDf$PT, ]
+newDf;
+# This will unroll newDf as a vector;
+# note that R is column-major storage so the transpose is necessary
+# since R vectorizes matrices by columns first.
+as.vector(as.matrix(t(newDf)));
+# # Change rownames to stringerized version of $PT
+rownames(newDf) = sprintf("%s", newDf$PT)
+Filled <- rownames(newDf)[ !is.na(newDf$VT1) ];
+# What this does is append a new element to the end of newDf to make sure
+# that the last value is always a good value
+# We will get rid of this value at the very end, since it is superfluous.
+newDf = rbind( newDf, newDf[ rownames(newDf) %in% Filled[ length(Filled) ], ] );
+# Select what columns are to be replaced
+namesSub <- c("VT1", "VT2");
+testDf <- newDf;
+testDf[namesSub] <- na.locf(testDf[namesSub], fromLast = T)
+testDf <- head(testDf, -1)
+newDf <- testDf;
+as.vector(as.matrix(t(newDf))); # to convert to a row!
+}
+
+# Case 2 - when I have more than 10 days before the threshold
+{
+# Case 2 - when I have more than 10 days before the threshold
+thisDf = data.frame(PT=c(0,-1,-2,-5,-13), VT1=c(0.1,-1.1,-2.1,-5.1,-13.1),
+                    VT2=c(0.2,-1.2,-2.2,-5.2,-13.2));
+thisDf;
+# Define newDf to have the completed index in PT and just fixed values for the VT1 and VT2
+newDf = data.frame( PT =(-(0:10)), VT1=NA, VT2=NA );
+newDf;
+# Earlier rows
+earlierDf <- thisDf[ !thisDf$PT %in% newDf$PT, ];
+earlierDf;
+# What this does is reference the row space of newDf that corresponds to a row in thisDf
+# by looking at the value of PT in both of them.
+newDf[ newDf$PT %in% thisDf$PT, ] = thisDf[ thisDf$PT %in% newDf$PT, ];
+newDf;
+# What this does is append a new element to the end of newDf to make sure
+# that the last value is always a good value
+# We will get rid of this value at the very end, since it is superfluous.
+newDf = rbind( newDf, head(earlierDf, 1) );
+newDf;
+# Change rownames to stringerized version of $PT
+rownames(newDf) = sprintf("%s", newDf$PT)
+newDf;
+# Select what columns are to be replaced
+namesSub <- c("VT1", "VT2");
+testDf <- newDf;
+testDf[namesSub] <- na.locf(testDf[namesSub], fromLast = T)
+testDf <- head(testDf, -1)
+newDf <- testDf;
+finalDf <- as.data.frame(t(as.vector(as.matrix(t(newDf))))); # to convert to a row!
+finalDf;
+as.data.frame(t(as.vector(as.matrix(t(newDf)))))
+}
+
+nms <- function(n) {
+    # nms creates a character vector with "_day" to rename the columns in a dataframe
+    ns <- c();
+    for (i in -10:0) {
+        ns <- cbind( t(paste(n, i, sep = "_")), ns);
+    }
+    return(t(ns));
+}
+
