@@ -32,3 +32,4 @@ library(vcd);
 library(lmtest);
 library(sandwich);
 library(car);
+library(scales);

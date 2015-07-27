@@ -10,6 +10,7 @@ library(tgp);
 library(compare);
 library(plyr);
 library(Hmisc);
+library(scales);
 
 # Preprosessing files - must be done manually for each data set
 # Working directory: "C:/Users/CMoody/Desktop/workspace/VNL"
@@ -143,10 +144,8 @@ makePlot <- function(ListOfDataFrames, shade) {
                          as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])) ));
     }
     co <- rainbow(length(ListOfDataFrames));
-    crgb <- col2rgb(co, alpha = F)/255;
     plot(ListOfDataFrames[[i]]$ORDERING_DATE, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
-         bg = rgb(crgb[1,i], crgb[2,i], crgb[3,i], shade),
-         col = rgb(crgb[1,i], crgb[2,i], crgb[3,i], shade+0.1), pch = 21,
+         bg = alpha(co[i], shade), col = alpha(co[i], shade+0.1), pch = 21,
          type = "o", panel.first = grid(),
          xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")),
          ylim = range(min(ymin), max(ymax)),
@@ -161,8 +160,7 @@ makePlot <- function(ListOfDataFrames, shade) {
     axis.Date(side = 1, x = as.Date(ListOfDataFrames[[1]]$ORDERING_DATE));
     for (i in 1:length(ListOfDataFrames)){
         lines(ListOfDataFrames[[i]]$ORDERING_DATE, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
-              bg = rgb(crgb[1,i], crgb[2,i], crgb[3,i], shade),
-              col = rgb(crgb[1,i], crgb[2,i], crgb[3,i], shade+0.1), pch = 21,
+              bg = alpha(co[i], shade), col = alpha(co[i], shade+0.1), pch = 21,
               type = "b", panel.first = grid(),
               xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")),
               ylim = range(min(ymin), max(ymax)),
