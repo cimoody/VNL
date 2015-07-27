@@ -131,7 +131,7 @@ getResultDate <- function(cutoff, tID){
 }
 
 ## FUNCTION THAT PLOTS ALL ECN_CSN_ID FOR ONE LAB FROM LIST RETURNED FROM getResultDate
-makePlot <- function(ListOfDataFrames) {
+makePlot <- function(ListOfDataFrames, shade) {
     svg(sprintf("Lab_%s_%s_gt_%g.svg",
                 ListOfDataFrames[[1]]$CPT_CODE[1], ListOfDataFrames[[1]]$COMPONENT_ID[1],
                 ListOfDataFrames[[1]]$MIN_RAW_LABS, width = 7, height = 5));
@@ -143,8 +143,11 @@ makePlot <- function(ListOfDataFrames) {
                          as.numeric(as.character(ListOfDataFrames[[1]]$REFERENCE_LOW[1])) ));
     }
     co <- rainbow(length(ListOfDataFrames));
+    crgb <- col2rgb(co, alpha = F)/255;
     plot(ListOfDataFrames[[i]]$ORDERING_DATE, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
-         col = co[i], type = "o", panel.first = grid(),
+         bg = rgb(crgb[1,i], crgb[2,i], crgb[3,i], shade),
+         col = rgb(crgb[1,i], crgb[2,i], crgb[3,i], shade+0.1), pch = 21,
+         type = "o", panel.first = grid(),
          xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")),
          ylim = range(min(ymin), max(ymax)),
          xlab = "Time (days)",
@@ -158,7 +161,9 @@ makePlot <- function(ListOfDataFrames) {
     axis.Date(side = 1, x = as.Date(ListOfDataFrames[[1]]$ORDERING_DATE));
     for (i in 1:length(ListOfDataFrames)){
         lines(ListOfDataFrames[[i]]$ORDERING_DATE, ListOfDataFrames[[i]]$ORD_NUM_VALUE,
-              col = co[i], type = "b", panel.first = grid(),
+              bg = rgb(crgb[1,i], crgb[2,i], crgb[3,i], shade),
+              col = rgb(crgb[1,i], crgb[2,i], crgb[3,i], shade+0.1), pch = 21,
+              type = "b", panel.first = grid(),
               xlim = range(as.Date("2008-02-01"),as.Date("2008-11-30")),
               ylim = range(min(ymin), max(ymax)),
               xlab = "Time (days)",
