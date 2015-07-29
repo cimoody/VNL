@@ -237,6 +237,7 @@ finalDf;
 as.data.frame(t(as.vector(as.matrix(t(newDf)))))
 }
 
+# nms creates a character vector with "_day" to rename the columns in a dataframe
 nms <- function(n) {
     # nms creates a character vector with "_day" to rename the columns in a dataframe
     ns <- c();
@@ -324,6 +325,7 @@ case2 <- function(thisDf, ChangingVars) {
     return(finalDf);
 }
 
+# Creates a training dataframe that will keep track of each point in time
 reorderPT <- function(ListOfDataFrames){
     # Creates a training dataframe that will keep track of each point in time
     # Starts after use of
@@ -372,19 +374,10 @@ getTimeTrainMatrix <- function(originalListOfDataFrames){
     # Starting patients that do not cross threshold at random
     # negative days between 6 months and 2 years before threshold
     ListOfDataFrames <- startPTIME(ListOfDataFrames);
-    # Creating giant dataframe of all the dataframes
-    TrainDF <- getTrainDF(ListOfDataFrames);
+    # Organizing into giant dataframe with only 10 days before threshold
+    TrainDF <- reorderPT(ListOfDataFrames);
     #     # Subset TrainDF into only interesting cases (INT_FLAG==1) # Oleg said to remove
     #     TrainDF <- TrainDF[TrainDF$INT_FLAG==1, ];
-    # Linear regression package cannot use days, so changing to numeric
-    TrainDF$PROPER_TIME <- as.numeric(TrainDF$PROPER_TIME);
-    TrainDF$ORDERING_DATE2 <- as.numeric(TrainDF$ORDERING_DATE2);
-    # Adding row names for regression
-    rownames(TrainDF) <- paste(TrainDF$ORD_NUM_VALUE, "+/-", TrainDF$SD_ORD_VAL,
-                               TrainDF$REFERENCE_UNIT, TrainDF$CPT_CODE,
-                               TrainDF$COMPONENT_ID, TrainDF$ORDERING_DATE2,
-                               TrainDF$PROPER_TIME, TrainDF$ORDERING_DATE,
-                               TrainDF$PAT_ID, sep = "_");
     # return final dataframe
     return(TrainDF);
 }
