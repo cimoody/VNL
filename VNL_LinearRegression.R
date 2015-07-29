@@ -237,8 +237,6 @@ finalDf;
 as.data.frame(t(as.vector(as.matrix(t(newDf)))))
 }
 
-
-
 nms <- function(n) {
     # nms creates a character vector with "_day" to rename the columns in a dataframe
     ns <- c();
@@ -303,6 +301,7 @@ case2 <- function(thisDf, ChangingVars) {
     namesSub <- tail(ChangingVars, -1);
     # Getting last filled PROPER_TIME in thisDf in the 10 days before threshold
     LastBeforeTen <- as.numeric(thisDf[ thisDf$PROPER_TIME %in% newDf$PROPER_TIME, ]$PROPER_TIME[1]);
+    if (is.na(LastBeforeTen)) {LastBeforeTen <- -11;}
     # Getting the measurement before 10 days from threshold
     newRow <- thisDf[ thisDf$PROPER_TIME < LastBeforeTen, ]; # Data frame of values before 10 days before threshold
     newRow <- newRow[nrow(newRow), ]; # first values before 10 days before threshold
@@ -351,16 +350,16 @@ reorderPT <- function(ListOfDataFrames){
         ChangingDF$ORDERING_DATE <- as.character(ChangingDF$ORDERING_DATE);
         if (as.numeric(min(ChangingDF$PROPER_TIME)) > -10) {
             ChangingDF <- case1(ChangingDF, varsChanging);
-        }
-        else if (as.numeric(min(ChangingDF$PROPER_TIME)) < -10) {
+        } else if ( as.numeric(min(ChangingDF$PROPER_TIME)) < -10) {
             ChangingDF <- case2(ChangingDF, varsChanging);
-        }
-        else {sprintf("BREAK"); break;}
+        } else {sprintf("BREAK"); break;}
         Order <- cbind(NotChangingDF, ChangingDF);
         rownames(Order) <- NotChangingDF$PAT_ID;
         newOrder <- rbind(Order, newOrder);
     }
+    return(newOrder);
 }
+
 # Getting matrix for 'meta' patient for regression from lists
 getTimeTrainMatrix <- function(originalListOfDataFrames){
     # Getting matrix for 'meta' patient for regression from lists
