@@ -3,7 +3,7 @@
 ## July 2015
 
 # Installing Libraries
-source(file = "librariesVNL.R"); # If starting R for 1st time, else do below
+# source(file = "librariesVNL.R"); # If starting R for 1st time, else do below
 # # Gaussian Process Library
 library(tgp);
 # # Installing package to compare the two data tables
@@ -17,31 +17,34 @@ library(scales);
 wDir <- getwd();
 # Data directory: E:/VNL Data from Joe
 dDir <- "E:/VNL\ Data\ from\ Joe/";
-# Data filenames
-data.popname = sprintf("%s%s", dDir, "di_populations_v1.1.csv");
-data.labname = sprintf("%s%s", dDir, "di_lab_data_v1.1.csv");
-data.pop <- read.csv(file = data.popname, header = TRUE, stringsAsFactors = FALSE);
-data.lab <- read.csv(file = data.labname, header = TRUE, stringsAsFactors = FALSE);
-# Saving the data in R for manipulation
-save(data.pop, file = sprintf("%s%s", dDir, "dataPop.rda"));
-save(data.lab, file = sprintf("%s%s", dDir, "dataLab.rda"));
-# Checking columns for NA
-if( sum( is.na(data.lab$X) + 0 ) >= length( data.lab$X ) ) {
-    print(" X is all NA\n");
-} # from D. Sanchez
-if( sum( is.na(data.pop$X) + 0 ) >= length( data.pop$X ) ) {
-    print(" X is all NA\n");
-} # from D. Sanchez
-if( sum( is.na(data.pop$X.1) + 0 ) >= length( data.pop$X.1 ) ) {
-    print(" X is all NA\n");
-} # from D. Sanchez
-drops <- c("X");
-goodlab <- data.lab[,!(names(data.lab) %in% drops)];
-drops <- c("X", "X.1");
-goodpop <- data.pop[,!(names(data.pop) %in% drops)];
-# Save modified files for R manipulation
-save(goodpop, goodlab, file = sprintf("%s%s", dDir, "goodData.rda"));
-list.files(path = dDir, pattern = "\\.rda");
+List <- list.files(path = dDir, pattern = "\\.rda");
+if (!any(List=="goodData.rda")){
+    # Data filenames
+    data.popname = sprintf("%s%s", dDir, "di_populations_v1.1.csv");
+    data.labname = sprintf("%s%s", dDir, "di_lab_data_v1.1.csv");
+    data.pop <- read.csv(file = data.popname, header = TRUE, stringsAsFactors = FALSE);
+    data.lab <- read.csv(file = data.labname, header = TRUE, stringsAsFactors = FALSE);
+    # Saving the data in R for manipulation
+    save(data.pop, file = sprintf("%s%s", dDir, "dataPop.rda"));
+    save(data.lab, file = sprintf("%s%s", dDir, "dataLab.rda"));
+    # Checking columns for NA
+    if( sum( is.na(data.lab$X) + 0 ) >= length( data.lab$X ) ) {
+        print(" X is all NA\n");
+    } # from D. Sanchez
+    if( sum( is.na(data.pop$X) + 0 ) >= length( data.pop$X ) ) {
+        print(" X is all NA\n");
+    } # from D. Sanchez
+    if( sum( is.na(data.pop$X.1) + 0 ) >= length( data.pop$X.1 ) ) {
+        print(" X is all NA\n");
+    } # from D. Sanchez
+    drops <- c("X");
+    goodlab <- data.lab[,!(names(data.lab) %in% drops)];
+    drops <- c("X", "X.1");
+    goodpop <- data.pop[,!(names(data.pop) %in% drops)];
+    # Save modified files for R manipulation
+    save(goodpop, goodlab, file = sprintf("%s%s", dDir, "goodData.rda"));
+    list.files(path = dDir, pattern = "\\.rda");
+}
 load(sprintf("%s%s", dDir, "goodData.rda"));
 
 # Choosing first test to evaluate
