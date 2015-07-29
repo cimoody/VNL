@@ -18,7 +18,7 @@ install.packages('rattle');
 library(rattle);
 install.packages('rpart.plot');
 library(rpart.plot);
-install.packages('RColorBrewer');
+# install.packages('RColorBrewer');
 library(RColorBrewer);
 install.packages('randomForest');
 library(randomForest);
