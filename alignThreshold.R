@@ -57,6 +57,7 @@ t0Finder <- function(ListOfDataFrames){
                                     "PATID_ORDERDATE" = sprintf("%s_%s", ListOfDataFrames[[i]]$PAT_ID[j],
                                                                 ListOfDataFrames[[i]]$ORDERING_DATE[j]),
                                     "PAT_ID" = ListOfDataFrames[[i]]$PAT_ID[j],
+                                    "ENC_CSN_ID" = ListOfDataFrames[[i]]$ENC_CSN_ID[j],
                                     "t0" = ListOfDataFrames[[i]]$ORDERING_DATE[j],
                                     "TEST_NUM" = j,
                                     "TOTAL_TESTS" = nrow(ListOfDataFrames[[i]]) ));
@@ -72,7 +73,8 @@ addProperTime <- function(ListOfDataFrames, t0DataFrame){
     # ADD PROPERTIME TO EACH DATAFRAME IN LIST
     for (i in 1:nrow(t0DataFrame)) {
         for (j in 1:length(ListOfDataFrames)){
-            if ( ListOfDataFrames[[j]]$PAT_ID[1]==t0DataFrame$PAT_ID[i] ){
+            if ( ListOfDataFrames[[j]]$PAT_ID[1]==t0DataFrame$PAT_ID[i] &
+                 ListOfDataFrames[[j]]$ENC_CSN_ID[1]==t0DataFrame$ENC_CSN_ID[i] ){
                 ListOfDataFrames[[j]]$PROPER_TIME <-
                     ListOfDataFrames[[j]]$ORDERING_DATE -
                     t0DataFrame$t0[i];
