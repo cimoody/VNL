@@ -115,6 +115,7 @@ getResultDate <- function(cutoff, tID){
     for (i in 1:length(v)){
         patTLAB[[i]] <- data.frame(Test_Order_Date = trTimeLAB[i], LAB = patLAB[i],
                                    pat[[1]][i][[1]]$REFERENCE_UNIT,
+                                   pat[[1]][i][[1]]$ENC_CSN_ID,
                                    pat[[1]][i][[1]]$PAT_ID,
                                    pat[[1]][i][[1]]$REFERENCE_HIGH,
                                    pat[[1]][i][[1]]$REFERENCE_LOW,
@@ -122,7 +123,7 @@ getResultDate <- function(cutoff, tID){
                                    pat[[1]][i][[1]]$COMPONENT_ID,
                                    MIN_RAW_LABS = cutoff);
         names(patTLAB[[i]]) <- c("ORDERING_DATE", "ORD_NUM_VALUE", "REFERENCE_UNIT",
-                                 "PAT_ID", "REFERENCE_HIGH", "REFERENCE_LOW",
+                                 "ENC_CSN_ID", "PAT_ID", "REFERENCE_HIGH", "REFERENCE_LOW",
                                  "CPT_CODE", "COMPONENT_ID", "MIN_RAW_LABS");
     }
     # Removing invalid results of 99999
@@ -135,6 +136,47 @@ getResultDate <- function(cutoff, tID){
     }
     return(patTLAB);
 }
+
+makeLists <- 0; # It takes a while to remake all the lists, so I would recommend only making the ones you need
+if (makeLists) { # Code to create lists of dataframes. Set makeLists <- 1 to run.
+    BUN_80048_1518_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80048", "COMPONENT_ID"= as.numeric(1518)));
+    BUN_80053.01_1518_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80053.01", "COMPONENT_ID"= as.numeric(1518)));
+    BUN_80069_1518_gt20  <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80069", "COMPONENT_ID"= as.numeric(1518)));
+    Creat_80048_1523_gt20  <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80048", "COMPONENT_ID"= as.numeric(1523)));
+    Creat_80053.01_1523_gt20  <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80053.01", "COMPONENT_ID"= as.numeric(1523)));
+    Creat_80069_1523_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80069", "COMPONENT_ID"= as.numeric(1523)));
+    HEMO_85018.01_1498_gt20  <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="85018.01", "COMPONENT_ID"= as.numeric(1498)));
+    HEMO_85027_1498_gt20  <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="85027", "COMPONENT_ID"= as.numeric(1498)));
+    HEMO_CBCD_1498_gt20  <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="CBCD", "COMPONENT_ID"= as.numeric(1498)));
+    K_80048_1520_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80048", "COMPONENT_ID"= as.numeric(1520)));
+    K_80053.01_1520_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80053.01", "COMPONENT_ID"= as.numeric(1520)));
+    K_80069_1520_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80069", "COMPONENT_ID"= as.numeric(1520)));
+    Na_80048_1519_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80048", "COMPONENT_ID"= as.numeric(1519)));
+    Na_80053.01_1519_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80053.01", "COMPONENT_ID"= as.numeric(1519)));
+    Na_80069_1519_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="80069", "COMPONENT_ID"= as.numeric(1519)));
+    PLATE_85027_1504_gt20  <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="85027", "COMPONENT_ID"= as.numeric(1504)));
+    PLATE_CBCD_1504_gt20  <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="CBCD", "COMPONENT_ID"= as.numeric(1504)));
+    WBC_85027_1496_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="85027", "COMPONENT_ID"= as.numeric(1496)));
+    WBC_CBCD_1496_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="CBCD", "COMPONENT_ID"= as.numeric(1496)));
+}
+# Saving Lists
+if (makeLists) {
+    save(BUN_80048_1518_gt20, BUN_80053.01_1518_gt20, BUN_80069_1518_gt20,
+         file = sprintf("%s%s", dDir, "BUN_lists_gt20.rda"));
+    save(Creat_80048_1523_gt20, Creat_80053.01_1523_gt20, Creat_80069_1523_gt20,
+         file = sprintf("%s%s", dDir, "Creat_lists_gt20.rda"));
+    save(HEMO_85018.01_1498_gt20, HEMO_85027_1498_gt20, HEMO_CBCD_1498_gt20,
+         file = sprintf("%s%s", dDir, "HEMO_lists_gt20.rda"));
+    save(K_80048_1520_gt20, K_80053.01_1520_gt20, K_80069_1520_gt20,
+         file = sprintf("%s%s", dDir, "K_lists_gt20.rda"));
+    save(Na_80048_1519_gt20, Na_80053.01_1519_gt20, Na_80069_1519_gt20,
+         file = sprintf("%s%s", dDir, "Na_lists_gt20.rda"));
+    save(PLATE_85027_1504_gt20, PLATE_CBCD_1504_gt20,
+         file = sprintf("%s%s", dDir, "PLATE_lists_gt20.rda"));
+    save(WBC_85027_1496_gt20, WBC_CBCD_1496_gt20,
+         file = sprintf("%s%s", dDir, "WBC_lists_gt20.rda"));
+}
+
 
 ## FUNCTION THAT PLOTS ALL ECN_CSN_ID FOR ONE LAB FROM LIST RETURNED FROM getResultDate
 makePlot <- function(ListOfDataFrames, shade) {
