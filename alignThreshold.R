@@ -88,9 +88,13 @@ addProperTime <- function(ListOfDataFrames, t0DataFrame){
 returnProperTime <- function(originalListOfDataFrames) {
     # Return a dataframe with the proper time
     ListOfDataFrames <- normalStart(originalListOfDataFrames);
-    if (length(ListOfDataFrames)==0) {return(0);}
+    if (is.numeric(ListOfDataFrames)) {return(0);}
     properTime <- t0Finder(ListOfDataFrames);
-    adjustedList <- addProperTime(ListOfDataFrames, properTime);
+    if (length(properTime)==0) {
+        adjustedList <- ListOfDataFrames;
+    } else {
+        adjustedList <- addProperTime(ListOfDataFrames, properTime);
+    }
     for (j in 1:length(adjustedList)) {
         if (is.null(adjustedList[[j]]$PROPER_TIME)) {
             adjustedList[[j]]$PROPER_TIME <- adjustedList[[j]]$ORDERING_DATE -
