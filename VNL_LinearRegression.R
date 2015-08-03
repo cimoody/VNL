@@ -284,6 +284,8 @@ case1 <- function(thisDf, ChangingVars) {
     datcols <- as.vector(nms(tail(ChangingVars, 1))); # Columns that are dates
     finalDf[numcols] <- apply(finalDf[numcols], 2, function(x) as.numeric(as.character(x))); # Change columns to numeric
     finalDf[datcols] <- lapply(finalDf[datcols], as.Date, format = "%Y-%m-%d"); # Change columns to Dates
+    finalDf <- cbind(finalDf$ORDERING_DATE2_0, finalDf); # Adding Threshold Time to dataframe
+    names(finalDf)[names(finalDf)=="finalDf$ORDERING_DATE2_0"] <- "THRESHOLD_TIME";
     return(finalDf);
 }
 # Case 2 function
@@ -308,17 +310,14 @@ case2 <- function(thisDf, ChangingVars) {
     if (is.na(LastBeforeTen)) {LastBeforeTen <- -10.1;}
     # Getting the measurement before 10 days from threshold
     newRow <- thisDf[ thisDf$PROPER_TIME < LastBeforeTen, ]; # Data frame of values before 10 days before threshold
-    if (LastBeforeTen == -10) {newRow <- thisDf[ thisDf$PROPER_TIME <= LastBeforeTen, ];}
     newRow <- newRow[nrow(newRow), ]; # first values before 10 days before threshold
-    if (LastBeforeTen>-10){
-        newDf <- rbind(newRow, newDf); # Add last measured value before 10 days before threshold
-    }
+    newDf <- rbind(newRow, newDf); # Add last measured value before 10 days before threshold
     rownames(newDf) = sprintf("%s", newDf$PROPER_TIME); # Rename the row to match PROPER_TIME
     newDf[namesSub] <- na.locf(newDf[namesSub], fromLast = F);
     newDf[head(ChangingVars, -1)] <- apply(newDf[head(ChangingVars, -1)], 2, function(x) as.numeric(x));
     newDf[order(nrow(newDf):1),] <- newDf; # Invert so that PROPER_TIME counts down from 0 to -10.
     rownames(newDf) = sprintf("%s", newDf$PROPER_TIME); # Rename the row to match PROPER_TIME
-    if (LastBeforeTen>-10){newDf <- head(newDf, -1);} # Remove added row before 10 days before threshold
+    newDf <- head(newDf, -1); # Removing fill row
     finalDf <- as.vector(as.matrix(t(newDf))); # to convert to a row!
     finalnms <- as.vector((nms(ChangingVars))); # Names for new columns
     names(finalDf) <- finalnms; # Change column names
@@ -328,6 +327,43 @@ case2 <- function(thisDf, ChangingVars) {
     datcols <- as.vector(nms(tail(ChangingVars, 1))); # Columns that are dates
     finalDf[numcols] <- apply(finalDf[numcols], 2, function(x) as.numeric(as.character(x))); # Change columns to numeric
     finalDf[datcols] <- lapply(finalDf[datcols], as.Date, format = "%Y-%m-%d"); # Change columns to Dates
+    finalDf <- cbind(newRow$PROPER_TIME, finalDf); # Adding Threshold Time to dataframe
+    finalDf$`newRow$PROPER_TIME` <- 0 - finalDf$`newRow$PROPER_TIME`;
+    names(finalDf)[names(finalDf)=="newRow$PROPER_TIME"] <- "THRESHOLD_TIME";
+    return(finalDf);
+}
+# Case 3 function
+case3 <- function(thisDf, ChangingVars) {
+    # Converting a dataframe of patient labs into a single row with only the threshold day and ten days earlier kept.
+    # Missing data is filled in with previous good result or last result.
+    # Checking that ChangingVars are column names in thisDf
+    if (any(ChangingVars %in% names(thisDf)==FALSE)){
+        print("COLUMNS LISTED IN ChangingVars NOT PRESENT IN thisDf. BREAK");
+        break;
+    }
+    newDf <- data.frame(PT =(-(10:0)), VT1=NA, VT2=NA, VT3=NA, VT4=NA );
+    names(newDf) <- ChangingVars;
+    # What this does is reference the row space of newDf that corresponds to a row in thisDf
+    # by looking at the value of PT in both of them.
+    newDf[ newDf$PROPER_TIME %in% thisDf$PROPER_TIME, ] <- thisDf[ thisDf$PROPER_TIME %in% newDf$PROPER_TIME, ];
+    # Change rownames to stringerized version of $PT
+    rownames(newDf) = sprintf("%s", newDf$PROPER_TIME); # Rename the row to match PROPER_TIME
+    namesSub <- tail(ChangingVars, -1);
+    newDf[namesSub] <- na.locf(newDf[namesSub], fromLast = F);
+    newDf[head(ChangingVars, -1)] <- apply(newDf[head(ChangingVars, -1)], 2, function(x) as.numeric(x));
+    newDf[order(nrow(newDf):1),] <- newDf; # Invert so that PROPER_TIME counts down from 0 to -10.
+    rownames(newDf) = sprintf("%s", newDf$PROPER_TIME); # Rename the row to match PROPER_TIME
+    finalDf <- as.vector(as.matrix(t(newDf))); # to convert to a row!
+    finalnms <- as.vector((nms(ChangingVars))); # Names for new columns
+    names(finalDf) <- finalnms; # Change column names
+    finalDf <- as.data.frame(t(finalDf)); # Convert to data frame
+    # Changing all numbers back to numeric and all dates to Dates!
+    numcols <- as.vector(nms(head(ChangingVars, -1))); # Columns that are numeric
+    datcols <- as.vector(nms(tail(ChangingVars, 1))); # Columns that are dates
+    finalDf[numcols] <- apply(finalDf[numcols], 2, function(x) as.numeric(as.character(x))); # Change columns to numeric
+    finalDf[datcols] <- lapply(finalDf[datcols], as.Date, format = "%Y-%m-%d"); # Change columns to Dates
+    finalDf <- cbind(finalDf$ORDERING_DATE2_0, finalDf); # Adding Threshold Time to dataframe
+    names(finalDf)[names(finalDf)=="finalDf$ORDERING_DATE2_0"] <- "THRESHOLD_TIME";
     return(finalDf);
 }
 
@@ -356,15 +392,21 @@ reorderPT <- function(ListOfDataFrames){
         ChangingDF$PROPER_TIME <- as.numeric(ChangingDF$PROPER_TIME);
         ChangingDF$ORDERING_DATE2 <- as.numeric(ChangingDF$ORDERING_DATE2);
         ChangingDF$ORDERING_DATE <- as.character(ChangingDF$ORDERING_DATE);
+        # Normalizing ORD_NUM_VALUE to ORD_NUM_VALUE/REFERENCE_HIGH
+        ChangingDF$ORD_NUM_VALUE <- ChangingDF$ORD_NUM_VALUE/f2n(NotChangingDF$REFERENCE_HIGH);
+        ChangingDF$SD_ORD_VAL <- ChangingDF$SD_ORD_VAL/f2n(NotChangingDF$REFERENCE_HIGH);
         if (as.numeric(min(ChangingDF$PROPER_TIME)) > -10) {
             print(j); print("AAAAAA");
             ChangingDF <- case1(ChangingDF, varsChanging);
-        } else if ( as.numeric(min(ChangingDF$PROPER_TIME)) <= -10) {
+        } else if ( as.numeric(min(ChangingDF$PROPER_TIME)) < -10) {
             print(j); print("BBBBBB");
             ChangingDF <- case2(ChangingDF, varsChanging);
+        } else if ( as.numeric(min(ChangingDF$PROPER_TIME)) == -10){
+            print(j); print("CCCCCC");
+            ChangingDF <- case3(ChangingDF, varsChanging);
         } else {print("BREAK"); break;}
         Order <- cbind(NotChangingDF, ChangingDF);
-        rownames(Order) <- sprintf("%s.%s_%s", NotChanging$ENC_CSN_ID,
+        rownames(Order) <- sprintf("%s.%s_%s", NotChangingDF$ENC_CSN_ID,
                                    NotChangingDF$PAT_ID, ChangingDF$`ORDERING_DATE_-10`);
         newOrder <- rbind(Order, newOrder);
     }
@@ -393,7 +435,7 @@ getTimeTrainMatrix <- function(originalListOfDataFrames){
 }
 
 # Making one big dataframe
-makeTimeDF = 0;
+makeTimeDF = 1;
 if (makeTimeDF){
         BUN_80048_1518_reg <- getTimeTrainMatrix(BUN_80048_1518_gt20)
         BUN_80053.01_1518_reg <- getTimeTrainMatrix(BUN_80053.01_1518_gt20)
@@ -422,49 +464,51 @@ if (makeTimeDF){
         goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Na_80048_1519_reg);
         goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Na_80053.01_1519_reg);
         goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, PLATE_CBCD_1504_reg);
+        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, PLATE_85027_1504_reg);
         goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, WBC_85027_1496_reg);
         goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, WBC_CBCD_1496_reg);
 
-        save(K_80048_1520_reg3, goodDataOrdered10DaysBeforeThreshold,
+        save(goodDataOrdered10DaysBeforeThreshold,
              BUN_80048_1518_reg, BUN_80053.01_1518_gt20,
              Creat_80048_1523_reg, Creat_80053.01_1523_reg,
              K_80048_1520_reg3, K_80053.01_1520_reg, K_80069_1520_reg,
-             Na_80048_1519_reg, Na_80053.01_1519_reg, PLATE_CBCD_1504_reg,
+             Na_80048_1519_reg, Na_80053.01_1519_reg,
+             PLATE_CBCD_1504_reg, PLATE_85027_1504_reg,
              WBC_85027_1496_reg, WBC_CBCD_1496_reg,
              file = sprintf("%s%s", dDir, "TimeOrdered_lists_gt20.rda"));
 }
 ## 3rd linear regression
-reg3 <- glm(PROPER_TIME ~
-                `ORD_NUM_VALUE_0` + `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
+reg3 <- glm(`THRESHOLD_TIME` ~ `COMPONENT_ID` + `INT_FLAG` +
+                `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
                 `ORD_NUM_VALUE_-3` + `ORD_NUM_VALUE_-4` + `ORD_NUM_VALUE_-5` +
                 `ORD_NUM_VALUE_-6` + `ORD_NUM_VALUE_-7` + `ORD_NUM_VALUE_-8` +
                 `ORD_NUM_VALUE_-9` + `ORD_NUM_VALUE_-10` +
-                `ORDERING_DATE2_0` + `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
+                `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
                 `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
                 `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
                 `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`, #+ COMPONENT_ID,
-            data = K_80048_1520_reg3);
-summary(reg2);
+            data = goodDataOrdered10DaysBeforeThreshold);
+summary(reg3);
 
-reg2$robse <- vcovHC(reg2, type = "HC1");
-coeftest(reg2, reg2$robse);
-threshold2_hat <- fitted(reg2); # predicted values
+reg3$robse <- vcovHC(reg3, type = "HC1");
+coeftest(reg3, reg3$robse);
+threshold3_hat <- fitted(reg3); # predicted values
 as.data.frame(threshold2_hat);
-threshold2_resid <- residuals(reg2); # residuals
+threshold3_resid <- residuals(reg3); # residuals
 as.data.frame(threshold2_resid);
-residualPlots(reg2);
-avPlots(reg2, id.n = 2, id.cex = 0.6, col = "blue");
+residualPlots(reg3);
+avPlots(reg3, id.n = 2, id.cex = 0.6, col = "blue");
 
-# Testing regressions
-K_Test <- K_80048_1520_reg[sample(nrow(K_80048_1520_reg3), 300),];
-x3 <-predict(reg3, K_Test, interval="prediction");
-x3 <- as.data.frame(x3)
-varx3 <- c("PROPER_TIME_0", "ORD_NUM_VALUE_0", "ORDERING_DATE2_0", "INT_FLAG");
-x3 <- K_Test[varx3];
-x2 <- cbind(x2, x1);
-t1 <- x2$INT_FLAG + 4;
-plot(x2$PROPER_TIME, x2$fit, pch = t1, col = alpha("gray", 1));
-with(data = x2, expr = errbar(x2$PROPER_TIME, x2$fit, fit + upr, fit - lwr,
-                              bg = alpha("gray", 0.1), col = alpha("gray", 1),
-                              pch = 21, add = T, cap = 0.01));
+# # Testing regressions
+# K_Test <- K_80048_1520_reg[sample(nrow(K_80048_1520_reg3), 300),];
+# x3 <-predict(reg3, K_Test, interval="prediction");
+# x3 <- as.data.frame(x3)
+# varx3 <- c("PROPER_TIME_0", "ORD_NUM_VALUE_0", "ORDERING_DATE2_0", "INT_FLAG");
+# x3 <- K_Test[varx3];
+# x2 <- cbind(x2, x1);
+# t1 <- x2$INT_FLAG + 4;
+# plot(x2$PROPER_TIME, x2$fit, pch = t1, col = alpha("gray", 1));
+# with(data = x2, expr = errbar(x2$PROPER_TIME, x2$fit, fit + upr, fit - lwr,
+#                               bg = alpha("gray", 0.1), col = alpha("gray", 1),
+#                               pch = 21, add = T, cap = 0.01));
 
