@@ -105,7 +105,7 @@ startPTIME <- function(ListOfDataFrames){
     # Function to start PROPER_TIME for INT_FLAG==0 at some random negative time before 100 days
     x <- sample(183:731, length(ListOfDataFrames), replace = F);
     for (j in 1:length(ListOfDataFrames)){
-        if (ListOfDataFrames[[j]]$PROPER_TIME[1] == 0)
+        if (ListOfDataFrames[[j]]$PROPER_TIME[1] == 0 & ListOfDataFrames[[j]]$INT_FLAG[1] == 0)
             ListOfDataFrames[[j]]$PROPER_TIME <- as.numeric(
                 ListOfDataFrames[[j]]$PROPER_TIME) - x[j]
     }
@@ -168,7 +168,6 @@ with(data = x2, expr = errbar(x2$PROPER_TIME, x2$fit, fit + upr, fit - lwr,
                               pch = 21, add = T, cap = 0.01));
 
 # New ideas
-
 # Case 1 - when I do not have 10 days before the threshold
 {
 # Case 1 - when I do not have 10 days before the threshold
@@ -202,7 +201,6 @@ newDf <- testDf;
 as.vector(as.matrix(t(newDf))); # to convert to a row!
 finalDf <- as.vector(as.matrix(t(newDf)));
 }
-
 # Case 2 - when I have more than 10 days before the threshold
 {
 # Case 2 - when I have more than 10 days before the threshold
@@ -435,7 +433,7 @@ getTimeTrainMatrix <- function(originalListOfDataFrames){
 }
 
 # Making one big dataframe
-makeTimeDF = 1;
+makeTimeDF = 0;
 if (makeTimeDF){
         BUN_80048_1518_reg <- getTimeTrainMatrix(BUN_80048_1518_gt20)
         BUN_80053.01_1518_reg <- getTimeTrainMatrix(BUN_80053.01_1518_gt20)
@@ -477,17 +475,21 @@ if (makeTimeDF){
              WBC_85027_1496_reg, WBC_CBCD_1496_reg,
              file = sprintf("%s%s", dDir, "TimeOrdered_lists_gt20.rda"));
 }
+
+metaPatient <- goodDataOrdered10DaysBeforeThreshold[
+    goodDataOrdered10DaysBeforeThreshold$INT_FLAG>0,];
+
 ## 3rd linear regression
-reg3 <- glm(`THRESHOLD_TIME` ~ `COMPONENT_ID` + `INT_FLAG` +
-                `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
+reg3 <- lm(`THRESHOLD_TIME` ~ `COMPONENT_ID` + #`INT_FLAG` +
+                `ORD_NUM_VALUE_0` + `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
                 `ORD_NUM_VALUE_-3` + `ORD_NUM_VALUE_-4` + `ORD_NUM_VALUE_-5` +
                 `ORD_NUM_VALUE_-6` + `ORD_NUM_VALUE_-7` + `ORD_NUM_VALUE_-8` +
                 `ORD_NUM_VALUE_-9` + `ORD_NUM_VALUE_-10` +
-                `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
+                `ORDERING_DATE2_0` + `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
                 `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
                 `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
                 `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`, #+ COMPONENT_ID,
-            data = goodDataOrdered10DaysBeforeThreshold);
+            data = metaPatient);
 summary(reg3);
 
 reg3$robse <- vcovHC(reg3, type = "HC1");
@@ -499,16 +501,19 @@ as.data.frame(threshold2_resid);
 residualPlots(reg3);
 avPlots(reg3, id.n = 2, id.cex = 0.6, col = "blue");
 
-# # Testing regressions
-# K_Test <- K_80048_1520_reg[sample(nrow(K_80048_1520_reg3), 300),];
-# x3 <-predict(reg3, K_Test, interval="prediction");
-# x3 <- as.data.frame(x3)
-# varx3 <- c("PROPER_TIME_0", "ORD_NUM_VALUE_0", "ORDERING_DATE2_0", "INT_FLAG");
-# x3 <- K_Test[varx3];
-# x2 <- cbind(x2, x1);
-# t1 <- x2$INT_FLAG + 4;
-# plot(x2$PROPER_TIME, x2$fit, pch = t1, col = alpha("gray", 1));
-# with(data = x2, expr = errbar(x2$PROPER_TIME, x2$fit, fit + upr, fit - lwr,
-#                               bg = alpha("gray", 0.1), col = alpha("gray", 1),
-#                               pch = 21, add = T, cap = 0.01));
+# Testing regressions
+reg_Test <- goodDataOrdered10DaysBeforeThreshold[sample(
+    nrow(goodDataOrdered10DaysBeforeThreshold[
+        goodDataOrdered10DaysBeforeThreshold$INT_FLAG>0,]), 100),];
+x3 <- predict(reg3, reg_Test, interval="prediction");
+x3 <- as.data.frame(x3)
+varx3 <- c("THRESHOLD_TIME", "ORD_NUM_VALUE_-5", "ORDERING_DATE2_-5", "INT_FLAG");
+x3.1 <- reg_Test[varx3];
+x3 <- cbind(x3.1, x3);
+t3 <- x3$INT_FLAG + 4;
+x3 <- as.data.frame(x3)
+plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, col = alpha("blue", 1));
+with(data = x2, expr = errbar(x2$THRESHOLD_TIME, x2$fit, fit + upr, fit - lwr,
+                              bg = alpha("gray", 0.1), col = alpha("gray", 1),
+                              pch = 21, add = T, cap = 0.01));
 
