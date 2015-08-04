@@ -1,5 +1,6 @@
 ## Libraries to install and source (so it is done once) for VNL
-
+install.packages("ggplot2");
+library(ggplot2);
 # Installing Gaussian Process Library
 install.packages("tgp");
 library(tgp);
