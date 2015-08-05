@@ -510,10 +510,15 @@ x3 <- as.data.frame(x3)
 varx3 <- c("THRESHOLD_TIME", "ORD_NUM_VALUE_-5", "ORDERING_DATE2_-5", "INT_FLAG");
 x3.1 <- reg_Test[varx3];
 x3 <- cbind(x3.1, x3);
-t3 <- x3$INT_FLAG + 4;
+t3 <- x3$INT_FLAG + 22;
 x3 <- as.data.frame(x3)
-plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, col = alpha("blue", 1));
-with(data = x2, expr = errbar(x2$THRESHOLD_TIME, x2$fit, fit + upr, fit - lwr,
-                              bg = alpha("gray", 0.1), col = alpha("gray", 1),
-                              pch = 21, add = T, cap = 0.01));
+svg("3rdPrediction_VNL_LinearRegression.svg", width = 7, height = 7);
+plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+     col = alpha("blue", 1), bg = alpha("blue", .5),
+     xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
+with(data = x3, expr = errbar(x3$THRESHOLD_TIME, x3$fit, fit + upr, fit - lwr,
+                              bg = alpha("black", 0.1), errbar.col = alpha("black", 0.4),
+                              pch = "", add = T, cap = 0.01));
+dev.off();
+plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, col = alpha("blue", 1), bg = alpha("blue", .5), panel.first = grid());
 

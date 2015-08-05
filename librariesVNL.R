@@ -1,4 +1,6 @@
 ## Libraries to install and source (so it is done once) for VNL
+install.packages("plyr");
+library(plyr);
 install.packages("ggplot2");
 library(ggplot2);
 # Installing Gaussian Process Library
@@ -8,8 +10,6 @@ library(tgp);
 # Installing package to compare the two data tables
 install.packages("compare");
 library(compare);
-install.packages("plyr");
-library(plyr);
 install.packages("Hmisc", dependencies = T);
 library(Hmisc);
 
