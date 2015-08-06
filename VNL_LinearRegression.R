@@ -479,6 +479,15 @@ if (makeTimeDF){
 metaPatient <- goodDataOrdered10DaysBeforeThreshold[
     goodDataOrdered10DaysBeforeThreshold$INT_FLAG>0,];
 
+# Sorting into testing and training sets
+n.points <- nrow(metaPatient);
+sampling.rate <- 0.8;
+num.test.set.labels <- n.points * (1 - sampling.rate);
+training <- sample(1:n.points, sampling.rate * n.points, replace = FALSE);
+trainset <- subset(metaPatient[training, ]);
+testing <- setdiff(1:n.points, training);
+testset <- subset(metaPatient[testing, ]);
+
 ## 3rd linear regression
 reg3 <- lm(`THRESHOLD_TIME` ~ `COMPONENT_ID` + #`INT_FLAG` +
                 `ORD_NUM_VALUE_0` + `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
@@ -489,7 +498,7 @@ reg3 <- lm(`THRESHOLD_TIME` ~ `COMPONENT_ID` + #`INT_FLAG` +
                 `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
                 `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
                 `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`, #+ COMPONENT_ID,
-            data = metaPatient);
+            data = trainset);
 summary(reg3);
 
 reg3$robse <- vcovHC(reg3, type = "HC1");
@@ -502,9 +511,10 @@ residualPlots(reg3);
 avPlots(reg3, id.n = 2, id.cex = 0.6, col = "blue");
 
 # Testing regressions
-reg_Test <- goodDataOrdered10DaysBeforeThreshold[sample(
-    nrow(goodDataOrdered10DaysBeforeThreshold[
-        goodDataOrdered10DaysBeforeThreshold$INT_FLAG>0,]), 100),];
+# reg_Test <- goodDataOrdered10DaysBeforeThreshold[sample(
+#     nrow(goodDataOrdered10DaysBeforeThreshold[
+#         goodDataOrdered10DaysBeforeThreshold$INT_FLAG>0,]), 100),];
+reg_Test <- testset;
 x3 <- predict(reg3, reg_Test, interval="prediction");
 x3 <- as.data.frame(x3)
 varx3 <- c("THRESHOLD_TIME", "ORD_NUM_VALUE_-5", "ORDERING_DATE2_-5", "INT_FLAG");
