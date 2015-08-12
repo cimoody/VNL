@@ -25,6 +25,10 @@ install.packages('randomForest');
 library(randomForest);
 install.packages('party');
 library(party);
+install.packages("RWeka", dependencies = TRUE);
+install.packages("rJava");
+library(rJava);
+library(RWeka);
 
 # Additional package for categorical graphics
 install.packages("vcd");
@@ -35,3 +39,11 @@ library(sandwich);
 library(car);
 library(zoo);
 library(scales);
+library(igraph);
+library(UsingR);
+
+# Package for dealing with dates
+install.packages("lubridate");
+library(lubridate);
+
+
