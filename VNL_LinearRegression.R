@@ -6,10 +6,10 @@
 # Installing Libraries
 # source(file = "librariesVNL.R");# if starting R for 1st time today
 # Libraries
-library(lmtest);
-library(sandwich);
-library(car);
-library(zoo);
+require(lmtest);
+require(sandwich);
+require(car);
+require(zoo);
 
 # Working directory: "C:/Users/CMoody/Desktop/workspace/VNL"
 wDir <- sprintf("%s%s", getwd(), "/");
@@ -504,9 +504,9 @@ summary(reg3);
 reg3$robse <- vcovHC(reg3, type = "HC1");
 coeftest(reg3, reg3$robse);
 threshold3_hat <- fitted(reg3); # predicted values
-as.data.frame(threshold2_hat);
+as.data.frame(threshold3_hat);
 threshold3_resid <- residuals(reg3); # residuals
-as.data.frame(threshold2_resid);
+as.data.frame(threshold3_resid);
 residualPlots(reg3);
 avPlots(reg3, id.n = 2, id.cex = 0.6, col = "blue");
 
@@ -532,3 +532,60 @@ with(data = x3, expr = errbar(x3$THRESHOLD_TIME, x3$fit, fit + upr, fit - lwr,
 dev.off();
 plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, col = alpha("blue", 1), bg = alpha("blue", .5), panel.first = grid());
 
+
+# 4th attempt
+metaPatient4 <- goodDataOrdered10DaysBeforeThreshold;
+
+# Sorting into testing and training sets
+n.points4 <- nrow(metaPatient4);
+sampling.rate <- 0.8;
+num.test.set.labels4 <- n.points * (1 - sampling.rate);
+training4 <- sample(1:n.points, sampling.rate * n.points, replace = FALSE);
+trainset4 <- subset(metaPatient4[training4, ]);
+testing4 <- setdiff(1:n.points, training4);
+testset4 <- subset(metaPatient4[testing4, ]);
+
+## 4rd linear regression
+reg4 <- lm(`THRESHOLD_TIME` ~ `COMPONENT_ID` + #`INT_FLAG` +
+               `ORD_NUM_VALUE_0` + `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
+               `ORD_NUM_VALUE_-3` + `ORD_NUM_VALUE_-4` + `ORD_NUM_VALUE_-5` +
+               `ORD_NUM_VALUE_-6` + `ORD_NUM_VALUE_-7` + `ORD_NUM_VALUE_-8` +
+               `ORD_NUM_VALUE_-9` + `ORD_NUM_VALUE_-10` +
+               `ORDERING_DATE2_0` + `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
+               `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
+               `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
+               `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`, #+ COMPONENT_ID,
+           data = trainset4);
+summary(reg4);
+
+reg4$robse <- vcovHC(reg4, type = "HC1");
+coeftest(reg4, reg4$robse);
+threshold4_hat <- fitted(reg4); # predicted values
+as.data.frame(threshold4_hat);
+threshold4_resid <- residuals(reg4); # residuals
+as.data.frame(threshold4_resid);
+residualPlots(reg4);
+avPlots(reg4, id.n = 2, id.cex = 0.6, col = "blue");
+
+# Testing regressions
+# reg_Test <- goodDataOrdered10DaysBeforeThreshold[sample(
+#     nrow(goodDataOrdered10DaysBeforeThreshold[
+#         goodDataOrdered10DaysBeforeThreshold$INT_FLAG>0,]), 100),];
+reg_Test4 <- testset4;
+x4 <- predict(reg4, reg_Test4, interval="prediction");
+x4 <- as.data.frame(x4)
+varx4 <- c("THRESHOLD_TIME", "ORD_NUM_VALUE_-5", "ORDERING_DATE2_-5", "INT_FLAG");
+x4.1 <- reg_Test4[varx4];
+x4 <- cbind(x4.1, x4);
+t4 <- x4$INT_FLAG + 22;
+x4 <- as.data.frame(x4)
+svg("4thPrediction_VNL_LinearRegression.svg", width = 7, height = 7);
+plot(x4$THRESHOLD_TIME, x4$fit, pch = t4, panel.first = grid(),
+     col = alpha("cyan", 1), bg = alpha("cyan", .5),
+     xlim = range(0:15),  ylim=range(-1:(max(x4$fit)+max(x4$upr))));
+with(data = x4, expr = errbar(x4$THRESHOLD_TIME, x4$fit, fit + upr, fit - lwr,
+                              bg = alpha("black", 0.1), errbar.col = alpha("black", 0.4),
+                              pch = "", add = T, cap = 0.01));
+dev.off();
+plot(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+# TERRIBLE!! 3rd is much better!
