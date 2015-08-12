@@ -124,9 +124,15 @@ points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
 points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
 
 
-meta <- read.arff("mergedDFg.arff");
+
+
+
+
+
+write.arff(meta2, "meta2.arff", eol = "\n");
+meta3 <- read.arff("meta2.arff");
 # Simple example choosing k
-classifier <- IBk(THRESHOLD_TIME ~ `COMPONENT_ID` + `INT_FLAG` +
+classifier <- IBk(THRESHOLD_TIME ~ `COMPONENT_ID` + # `INT_FLAG` +
                       `ORD_NUM_VALUE_0` + `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
                       `ORD_NUM_VALUE_-3` + `ORD_NUM_VALUE_-4` + `ORD_NUM_VALUE_-5` +
                       `ORD_NUM_VALUE_-6` + `ORD_NUM_VALUE_-7` + `ORD_NUM_VALUE_-8` +
@@ -134,6 +140,102 @@ classifier <- IBk(THRESHOLD_TIME ~ `COMPONENT_ID` + `INT_FLAG` +
                       `ORDERING_DATE2_0` + `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
                       `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
                       `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
-                      `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`, data = meta, na.action = na.omit );
+                      `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`, data = meta3, na.action = na.omit );
 summary(classifier);
+# === Summary ===
+#
+#     Correlation coefficient                  0.9948
+# Mean absolute error                      5.1551
+# Root mean squared error                 24.6119
+# Relative absolute error                  2.3572 %
+# Root relative squared error             10.2073 %
+# Total Number of Instances              445
+classifier;
+# IB1 instance-based classifier
+# using 1 nearest neighbour(s) for classification
+plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+     col = alpha("blue", 1), bg = alpha("blue", .5),
+     xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
+points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+       col = alpha("red", 1), bg = alpha("red", .5));
+points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+points(meta2$THRESHOLD_TIME, classifier$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+       col = alpha("green", 1), bg = alpha("green", .5))
 
+plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+     col = alpha("red", 1), bg = alpha("red", .5));
+points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+       col = alpha("blue", 1), bg = alpha("blue", .5))
+points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+points(meta2$THRESHOLD_TIME, classifier$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+       col = alpha("green", 1), bg = alpha("green", .5))
+# classifier is awesome. Almost too good to believe!
+
+# Another example letting RWeka find the best value for k
+classifier2 <- IBk(THRESHOLD_TIME ~ ., data = meta3);
+summary(classifier2);
+# === Summary ===
+#
+#     Correlation coefficient                  1
+# Mean absolute error                      0
+# Root mean squared error                  0
+# Relative absolute error                  0      %
+# Root relative squared error              0      %
+# Total Number of Instances              445
+# classifier2 (above) doesn't seem to be working.
+classifier2;
+# IB1 instance-based classifier
+# using 1 nearest neighbour(s) for classification
+plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+     col = alpha("blue", 1), bg = alpha("blue", .5),
+     xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
+points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+       col = alpha("red", 1), bg = alpha("red", .5));
+points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+points(meta2$THRESHOLD_TIME, classifier2$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+       col = alpha("green", 1), bg = alpha("green", .5))
+
+plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+     col = alpha("red", 1), bg = alpha("red", .5));
+points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+       col = alpha("blue", 1), bg = alpha("blue", .5))
+points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+points(meta2$THRESHOLD_TIME, classifier2$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+       col = alpha("green", 1), bg = alpha("green", .5))
+# Must be overfitting somewhere!
+
+# And 3rd try
+classifier3 <- IBk(THRESHOLD_TIME ~ ., data = meta3, control = Weka_control(K = 50, X = TRUE));
+evaluate_Weka_classifier(classifier3, numFolds = 10);
+# === 10 Fold Cross Validation ===
+#
+#     === Summary ===
+#
+#     Correlation coefficient                  0.7995
+# Mean absolute error                    118.1431
+# Root mean squared error                149.7029
+# Relative absolute error                 53.9482 %
+# Root relative squared error             61.999  %
+# Total Number of Instances              445
+classifier3;
+# IB1 instance-based classifier
+# using 14 nearest neighbour(s) for classification
+plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+     col = alpha("blue", 1), bg = alpha("blue", .5),
+     xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
+points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+       col = alpha("red", 1), bg = alpha("red", .5));
+points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+points(meta2$THRESHOLD_TIME, classifier3$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+       col = alpha("green", 1), bg = alpha("green", .5))
+
+plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+     col = alpha("red", 1), bg = alpha("red", .5));
+points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+       col = alpha("blue", 1), bg = alpha("blue", .5))
+points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+points(meta2$THRESHOLD_TIME, classifier3$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+       col = alpha("green", 1), bg = alpha("green", .5))
+# classifier3 is terrible - worst yet!
+
+# Trying binary classifier to predict if patient belongs to INT_FLAG==1 category.
