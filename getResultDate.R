@@ -5,12 +5,12 @@
 # Installing Libraries
 # source(file = "librariesVNL.R"); # If starting R for 1st time, else do below
 # # Gaussian Process Library
-library(tgp);
+require(tgp);
 # # Installing package to compare the two data tables
-library(compare);
-library(plyr);
-library(Hmisc);
-library(scales);
+require(compare);
+require(plyr);
+require(Hmisc);
+require(scales);
 
 # Preprosessing files - must be done manually for each data set
 # Working directory: "C:/Users/CMoody/Desktop/workspace/VNL"

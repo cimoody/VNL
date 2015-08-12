@@ -7,20 +7,20 @@
 # source(file = "librariesVNL.R");# if starting R for 1st time today
 
 # Installing Gaussian Process Library
-library(tgp);
+require(tgp);
 # Installing package to compare the two data tables
-library(compare);
-library(plyr);
-library(Hmisc);
+require(compare);
+require(plyr);
+require(Hmisc);
 # Package for classification
-library(rpart);
-library(rattle);
-library(rpart.plot);
-library(RColorBrewer);
-library(randomForest);
-library(party);
+require(rpart);
+require(rattle);
+require(rpart.plot);
+require(RColorBrewer);
+require(randomForest);
+require(party);
 # Additional package for categorical graphics
-library(vcd);
+require(vcd);
 
 
 # Set random seed
