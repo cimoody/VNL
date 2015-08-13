@@ -270,7 +270,7 @@ vnl.knn.flag;
 # Best k: 13
 vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[13]][1:356];
 # Need 1 or 0
-vnl.knn.flag1 <-  vapply(tflag, FUN = function(x){if (x > 0.2) 1 else 0}, FUN.VALUE = c(1));
+vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > 0.2) 1 else 0}, FUN.VALUE = c(1));
 CM.flag1 <- table(vnl.knn.flag1, vnl.train$INT_FLAG);
 CM.flag1;
 # vnl.knn.flag1     0   1
@@ -289,133 +289,135 @@ CM.prediction.flag1;
 accuracy.prediction.flag1 <- (sum(diag(CM.prediction.flag1)))/sum(CM.prediction.flag1);
 accuracy.prediction.flag1; # [1] 0.9438202
 
-plot(vnl.train$THRESHOLD_TIME, vnl.knn$fitted.values[[28]][1:356],
-     pch = vnl.train$INT_FLAG+22, col = vnl.train$INT_FLAG+2);
 
-
-
-# Try again!
-vnl.knn2 <- kknn(formula = formula(`THRESHOLD_TIME` ~ .),
-                 train = vnl.train, test = vnl.test, k = 28, distance = 1);
-# Extracting the prediction
-fit <- ceil(fitted(vnl.knn2));
-table(vnl.test$THRESHOLD_TIME, fit);
-plot(vnl.test$THRESHOLD_TIME, fit, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-     col = alpha("red", 1), bg = alpha("red", .5), xlim = range(0:20), ylim = range(0:20));
-plot(vnl.test$THRESHOLD_TIME, fit, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-     col = alpha("red", 1), bg = alpha("red", .5));
-# Also terrible.
-
-# 3rd try
-vnl.knn3 <- kknn(formula = formula(`THRESHOLD_TIME` ~ `COMPONENT_ID` + #`INT_FLAG` +
-                                       `ORD_NUM_VALUE_0` + `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
-                                       `ORD_NUM_VALUE_-3` + `ORD_NUM_VALUE_-4` + `ORD_NUM_VALUE_-5` +
-                                       `ORD_NUM_VALUE_-6` + `ORD_NUM_VALUE_-7` + `ORD_NUM_VALUE_-8` +
-                                       `ORD_NUM_VALUE_-9` + `ORD_NUM_VALUE_-10` +
-                                       `ORDERING_DATE2_0` + `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
-                                       `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
-                                       `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
-                                       `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`),
-                 train = vnl.train, test = vnl.test, k = 28, distance = 1);
-# Extracting the prediction
-fit3 <- fitted(vnl.knn3);
-table(vnl.test$THRESHOLD_TIME, fit3);
-plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-     col = alpha("red", 1), bg = alpha("red", .5), xlim = range(0:20), ylim = range(0:20));
-plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-     col = alpha("red", 1), bg = alpha("red", .5));
-# Much better!
-# Comparing to earlier glm plot
-plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
-     col = alpha("blue", 1), bg = alpha("blue", .5),
-     xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
-points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-       col = alpha("red", 1), bg = alpha("red", .5));
-points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
-
-plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-     col = alpha("red", 1), bg = alpha("red", .5));
-points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
-       col = alpha("blue", 1), bg = alpha("blue", .5))
-points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
-
-
-# Using RWeka for INT_FLAG Classification
-classifier <- IBk(THRESHOLD_TIME ~ `COMPONENT_ID` + # `INT_FLAG` +
-                      `ORD_NUM_VALUE_0` + `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
-                      `ORD_NUM_VALUE_-3` + `ORD_NUM_VALUE_-4` + `ORD_NUM_VALUE_-5` +
-                      `ORD_NUM_VALUE_-6` + `ORD_NUM_VALUE_-7` + `ORD_NUM_VALUE_-8` +
-                      `ORD_NUM_VALUE_-9` + `ORD_NUM_VALUE_-10` +
-                      `ORDERING_DATE2_0` + `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
-                      `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
-                      `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
-                      `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`, data = meta3, na.action = na.omit );
-summary(classifier);
-
-classifier;
-
-plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
-     col = alpha("blue", 1), bg = alpha("blue", .5),
-     xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
-points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-       col = alpha("red", 1), bg = alpha("red", .5));
-points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
-points(meta2$THRESHOLD_TIME, classifier$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
-       col = alpha("green", 1), bg = alpha("green", .5))
-
-plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-     col = alpha("red", 1), bg = alpha("red", .5));
-points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
-       col = alpha("blue", 1), bg = alpha("blue", .5))
-points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
-points(meta2$THRESHOLD_TIME, classifier$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
-       col = alpha("green", 1), bg = alpha("green", .5))
-
-
-# Another example letting RWeka find the best value for k
-classifier2 <- IBk(THRESHOLD_TIME ~ ., data = meta3);
-summary(classifier2);
-
-classifier2;
-
-plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
-     col = alpha("blue", 1), bg = alpha("blue", .5),
-     xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
-points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-       col = alpha("red", 1), bg = alpha("red", .5));
-points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
-points(meta2$THRESHOLD_TIME, classifier2$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
-       col = alpha("green", 1), bg = alpha("green", .5))
-
-plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-     col = alpha("red", 1), bg = alpha("red", .5));
-points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
-       col = alpha("blue", 1), bg = alpha("blue", .5))
-points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
-points(meta2$THRESHOLD_TIME, classifier2$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
-       col = alpha("green", 1), bg = alpha("green", .5))
-
-
-# And 3rd try
-classifier3 <- IBk(THRESHOLD_TIME ~ ., data = meta3, control = Weka_control(K = 50, X = TRUE));
-evaluate_Weka_classifier(classifier3, numFolds = 10);
-
-classifier3;
-
-plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
-     col = alpha("blue", 1), bg = alpha("blue", .5),
-     xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
-points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-       col = alpha("red", 1), bg = alpha("red", .5));
-points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
-points(meta2$THRESHOLD_TIME, classifier3$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
-       col = alpha("green", 1), bg = alpha("green", .5))
-
-plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
-     col = alpha("red", 1), bg = alpha("red", .5));
-points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
-       col = alpha("blue", 1), bg = alpha("blue", .5))
-points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
-points(meta2$THRESHOLD_TIME, classifier3$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
-       col = alpha("green", 1), bg = alpha("green", .5))
-
+############## BELOW IS NOT FINISHED!!!!
+# plot(vnl.train$THRESHOLD_TIME, vnl.knn$fitted.values[[28]][1:356],
+#      pch = vnl.train$INT_FLAG+22, col = vnl.train$INT_FLAG+2);
+#
+#
+#
+# # Try again!
+# vnl.knn2 <- kknn(formula = formula(`THRESHOLD_TIME` ~ .),
+#                  train = vnl.train, test = vnl.test, k = 28, distance = 1);
+# # Extracting the prediction
+# fit <- ceil(fitted(vnl.knn2));
+# table(vnl.test$THRESHOLD_TIME, fit);
+# plot(vnl.test$THRESHOLD_TIME, fit, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#      col = alpha("red", 1), bg = alpha("red", .5), xlim = range(0:20), ylim = range(0:20));
+# plot(vnl.test$THRESHOLD_TIME, fit, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#      col = alpha("red", 1), bg = alpha("red", .5));
+# # Also terrible.
+#
+# # 3rd try
+# vnl.knn3 <- kknn(formula = formula(`THRESHOLD_TIME` ~ `COMPONENT_ID` + #`INT_FLAG` +
+#                                        `ORD_NUM_VALUE_0` + `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
+#                                        `ORD_NUM_VALUE_-3` + `ORD_NUM_VALUE_-4` + `ORD_NUM_VALUE_-5` +
+#                                        `ORD_NUM_VALUE_-6` + `ORD_NUM_VALUE_-7` + `ORD_NUM_VALUE_-8` +
+#                                        `ORD_NUM_VALUE_-9` + `ORD_NUM_VALUE_-10` +
+#                                        `ORDERING_DATE2_0` + `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
+#                                        `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
+#                                        `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
+#                                        `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`),
+#                  train = vnl.train, test = vnl.test, k = 28, distance = 1);
+# # Extracting the prediction
+# fit3 <- fitted(vnl.knn3);
+# table(vnl.test$THRESHOLD_TIME, fit3);
+# plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#      col = alpha("red", 1), bg = alpha("red", .5), xlim = range(0:20), ylim = range(0:20));
+# plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#      col = alpha("red", 1), bg = alpha("red", .5));
+# # Much better!
+# # Comparing to earlier glm plot
+# plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+#      col = alpha("blue", 1), bg = alpha("blue", .5),
+#      xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
+# points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("red", 1), bg = alpha("red", .5));
+# points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+#
+# plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#      col = alpha("red", 1), bg = alpha("red", .5));
+# points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+#        col = alpha("blue", 1), bg = alpha("blue", .5))
+# points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+#
+#
+# # Using RWeka for INT_FLAG Classification
+# classifier <- IBk(THRESHOLD_TIME ~ `COMPONENT_ID` + # `INT_FLAG` +
+#                       `ORD_NUM_VALUE_0` + `ORD_NUM_VALUE_-1` + `ORD_NUM_VALUE_-2` +
+#                       `ORD_NUM_VALUE_-3` + `ORD_NUM_VALUE_-4` + `ORD_NUM_VALUE_-5` +
+#                       `ORD_NUM_VALUE_-6` + `ORD_NUM_VALUE_-7` + `ORD_NUM_VALUE_-8` +
+#                       `ORD_NUM_VALUE_-9` + `ORD_NUM_VALUE_-10` +
+#                       `ORDERING_DATE2_0` + `ORDERING_DATE2_-1` + `ORDERING_DATE2_-2` +
+#                       `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
+#                       `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
+#                       `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`, data = meta3, na.action = na.omit );
+# summary(classifier);
+#
+# classifier;
+#
+# plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+#      col = alpha("blue", 1), bg = alpha("blue", .5),
+#      xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
+# points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("red", 1), bg = alpha("red", .5));
+# points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+# points(meta2$THRESHOLD_TIME, classifier$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("green", 1), bg = alpha("green", .5))
+#
+# plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#      col = alpha("red", 1), bg = alpha("red", .5));
+# points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+#        col = alpha("blue", 1), bg = alpha("blue", .5))
+# points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+# points(meta2$THRESHOLD_TIME, classifier$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("green", 1), bg = alpha("green", .5))
+#
+#
+# # Another example letting RWeka find the best value for k
+# classifier2 <- IBk(THRESHOLD_TIME ~ ., data = meta3);
+# summary(classifier2);
+#
+# classifier2;
+#
+# plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+#      col = alpha("blue", 1), bg = alpha("blue", .5),
+#      xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
+# points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("red", 1), bg = alpha("red", .5));
+# points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+# points(meta2$THRESHOLD_TIME, classifier2$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("green", 1), bg = alpha("green", .5))
+#
+# plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#      col = alpha("red", 1), bg = alpha("red", .5));
+# points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+#        col = alpha("blue", 1), bg = alpha("blue", .5))
+# points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+# points(meta2$THRESHOLD_TIME, classifier2$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("green", 1), bg = alpha("green", .5))
+#
+#
+# # And 3rd try
+# classifier3 <- IBk(THRESHOLD_TIME ~ ., data = meta3, control = Weka_control(K = 50, X = TRUE));
+# evaluate_Weka_classifier(classifier3, numFolds = 10);
+#
+# classifier3;
+#
+# plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+#      col = alpha("blue", 1), bg = alpha("blue", .5),
+#      xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
+# points(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("red", 1), bg = alpha("red", .5));
+# points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+# points(meta2$THRESHOLD_TIME, classifier3$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("green", 1), bg = alpha("green", .5))
+#
+# plot(vnl.test$THRESHOLD_TIME, fit3, pch = vnl.test$INT_FLAG+22, panel.first = grid(),
+#      col = alpha("red", 1), bg = alpha("red", .5));
+# points(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
+#        col = alpha("blue", 1), bg = alpha("blue", .5))
+# points(x4$THRESHOLD_TIME, x4$fit, pch = t4, col = alpha("cyan", 1), bg = alpha("cyan", .5), panel.first = grid());
+# points(meta2$THRESHOLD_TIME, classifier3$predictions, pch = meta2$INT_FLAG+22, panel.first = grid(),
+#        col = alpha("green", 1), bg = alpha("green", .5))
+#
