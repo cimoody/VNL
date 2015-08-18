@@ -32,7 +32,144 @@ for (i in 1:length(listfiles)) {
 }
 
 # Merging population and lab data
-mergedDF <-  merge.data.frame(goodDataOrdered10DaysBeforeThreshold, goodpop, stringsAsFactors = FALSE);
+# mergedDF <-  merge.data.frame(goodDataOrdered10DaysBeforeThreshold, goodpop);
+mergedDF <-  merge.data.frame(goodDataOrdered10DaysBeforeThreshold_alignMax, goodpop);
+
+createMeta <- function(mDF){
+    # Function takes merged dataframe of the time population data and Ordered10DaysBeforeThreshold
+    # to create and clean up a new dataframe that is returned.
+    mergedDFg <- mDF;
+    # Fixing CPT_CODE
+    mergedDFg$CPT_CODE <- factor(mergedDFg$CPT_CODE, labels = c("80048", "80053.01", "80069", "CBCD", "85027"));
+    summary(mergedDFg$CPT_CODE);
+    summary(table(mergedDFg$CPT_CODE));
+    # Fixing REFERENCE_UNIT
+    str(mergedDFg);
+    summary(table(mergedDFg$REFERENCE_UNIT));
+    summary((mergedDFg$REFERENCE_UNIT));
+    class(mergedDFg$REFERENCE_UNIT);
+    mergedDFg$REFERENCE_UNIT <- factor(mergedDFg$REFERENCE_UNIT, labels = c("mg/dL", "mmol/L", "K/uL"));
+    # Fixing REFERENCE_LOW
+    summary(table(mergedDFg$REFERENCE_LOW));
+    summary((mergedDFg$REFERENCE_LOW));
+    class(mergedDFg$REFERENCE_LOW);
+    mergedDFg$REFERENCE_LOW <- factor(mergedDFg$REFERENCE_LOW, labels = c("6", "0.7", "3.5", "135", "150", "4"));
+    mergedDFg$REFERENCE_LOW <- f2n(mergedDFg$REFERENCE_LOW)
+    # Fixing REFERENCE_HIGH
+    summary(table(mergedDFg$REFERENCE_HIGH));
+    summary((mergedDFg$REFERENCE_HIGH));
+    class(mergedDFg$REFERENCE_HIGH);
+    mergedDFg$REFERENCE_HIGH <- f2n(mergedDF$REFERENCE_HIGH)
+    # Fixing ETHNIC_GROUP_C
+    str(mergedDFg$ETHNIC_GROUP_C);
+    summary(table(mergedDFg$ETHNIC_GROUP_C));
+    summary((mergedDFg$ETHNIC_GROUP_C));
+    class(mergedDFg$ETHNIC_GROUP_C);
+    mergedDFg$ETHNIC_GROUP_C <- as.numeric(mergedDF$ETHNIC_GROUP_C);
+    # Fixing PCP_PROV_ID
+    mergedDFg$PCP_PROV_ID <- as.numeric(mergedDF$PCP_PROV_ID);
+    # Fixing CO_CD
+    str(mergedDFg$CO_CD);
+    summary(table(mergedDFg$CO_CD));
+    summary((mergedDFg$CO_CD));
+    class(mergedDFg$CO_CD);
+    mergedDFg$CO_CD <- as.factor(mergedDF$CO_CD); # Can remove this column all the same
+    # Fixing BILL_ADMS_DT
+    str(mergedDFg$BILL_ADMS_DT);
+    (table(mergedDFg$BILL_ADMS_DT));
+    summary((mergedDFg$BILL_ADMS_DT));
+    class(mergedDFg$BILL_ADMS_DT);
+    mergedDFg$BILL_ADMS_DT <- mdy(mergedDF$BILL_ADMS_DT, tz = "EST");
+    # Fixing BILL_DISCHRG_DT
+    str(mergedDFg$BILL_DISCHRG_DT);
+    (table(mergedDFg$BILL_DISCHRG_DT));
+    summary((mergedDFg$BILL_DISCHRG_DT));
+    class(mergedDFg$BILL_DISCHRG_DT);
+    mergedDFg$BILL_DISCHRG_DT <- mdy(mergedDF$BILL_DISCHRG_DT, tz = "EST");
+    # Fixing READMT_WITHIN_30_DAYS
+    str(mergedDFg$READMT_WITHIN_30_DAYS);
+    (table(mergedDFg$READMT_WITHIN_30_DAYS));
+    summary((mergedDFg$READMT_WITHIN_30_DAYS));
+    class(mergedDFg$READMT_WITHIN_30_DAYS);
+    mergedDFg$READMT_WITHIN_30_DAYS <- as.factor(mergedDF$READMT_WITHIN_30_DAYS);
+    # Fixing ADMT_DIAG
+    str(mergedDFg$ADMT_DIAG);
+    (table(mergedDFg$ADMT_DIAG));
+    summary((mergedDFg$ADMT_DIAG));
+    class(mergedDFg$ADMT_DIAG);
+    mergedDFg$ADMT_DIAG <- as.factor(mergedDF$ADMT_DIAG);
+    # Fixing ADMT_NURSS_STTN
+    str(mergedDFg$ADMT_NURSS_STTN);
+    (table(mergedDFg$ADMT_NURSS_STTN));
+    summary((mergedDFg$ADMT_NURSS_STTN));
+    class(mergedDFg$ADMT_NURSS_STTN);
+    mergedDFg$ADMT_NURSS_STTN <- as.factor(mergedDF$ADMT_NURSS_STTN);
+    # Fixing ADMT_SRC
+    str(mergedDFg$ADMT_SRC);
+    (table(mergedDFg$ADMT_SRC));
+    summary((mergedDFg$ADMT_SRC));
+    class(mergedDFg$ADMT_SRC);
+    mergedDFg$ADMT_SRC <- as.factor(mergedDF$ADMT_SRC);
+    # Fixing ADMT_TYP
+    str(mergedDFg$ADMT_TYP);
+    summary(table(mergedDFg$ADMT_TYP));
+    summary((mergedDFg$ADMT_TYP));
+    class(mergedDFg$ADMT_TYP);
+    mergedDFg$ADMT_TYP <- as.factor(mergedDF$ADMT_TYP);
+    # Fixing PRINC_PROC
+    str(mergedDFg$PRINC_PROC);
+    summary(table(mergedDFg$PRINC_PROC));
+    summary((mergedDFg$PRINC_PROC));
+    class(mergedDFg$PRINC_PROC);
+    mergedDFg$PRINC_PROC <- as.numeric(mergedDF$PRINC_PROC);
+    # Fixing REFRL_SRC
+    str(mergedDFg$REFRL_SRC);
+    summary(table(mergedDFg$REFRL_SRC));
+    summary((mergedDFg$REFRL_SRC));
+    class(mergedDFg$REFRL_SRC);
+    mergedDFg$REFRL_SRC <- as.factor(mergedDF$REFRL_SRC);
+    # Fixing REFRG_MD
+    str(mergedDFg$REFRG_MD);
+    summary(table(mergedDFg$REFRG_MD));
+    summary((mergedDFg$REFRG_MD));
+    class(mergedDFg$REFRG_MD);
+    mergedDFg$REFRG_MD <- as.numeric(mergedDF$REFRG_MD);
+    # Fixing APR_DRG_CD
+    str(mergedDFg$APR_DRG_CD);
+    summary(table(mergedDFg$APR_DRG_CD));
+    summary((mergedDFg$APR_DRG_CD));
+    class(mergedDFg$APR_DRG_CD);
+    mergedDFg$APR_DRG_CD <- as.numeric(mergedDF$APR_DRG_CD);
+    # Fixing APR_SEV_LVL
+    str(mergedDFg$APR_SEV_LVL);
+    summary(table(mergedDFg$APR_SEV_LVL));
+    summary((mergedDFg$APR_SEV_LVL));
+    class(mergedDFg$APR_SEV_LVL);
+    mergedDFg$APR_SEV_LVL <- as.numeric(mergedDF$APR_SEV_LVL);
+    # Fixing DISCHRG_DEPT
+    str(mergedDFg$DISCHRG_DEPT);
+    summary(table(mergedDFg$DISCHRG_DEPT));
+    summary((mergedDFg$DISCHRG_DEPT));
+    class(mergedDFg$DISCHRG_DEPT);
+    mergedDFg$DISCHRG_DEPT <- as.factor(mergedDF$DISCHRG_DEPT);
+    # Fixing DISCHRG_DISPOS
+    str(mergedDFg$DISCHRG_DISPOS);
+    summary(table(mergedDFg$DISCHRG_DISPOS));
+    summary((mergedDFg$DISCHRG_DISPOS));
+    class(mergedDFg$DISCHRG_DISPOS);
+    mergedDFg$DISCHRG_DISPOS <- as.factor(mergedDF$DISCHRG_DISPOS);
+
+    # Columns to remove from classification
+    removCol <- c("MIN_RAW_LABS", "CO_CD");
+
+    str(mergedDFg)
+    meta <- subset(mergedDFg, select=-c(MIN_RAW_LABS, CO_CD));
+    return(meta);
+}
+
+meta <- createMeta(mergedDF)
+
+# NEED to source(VNL_graph.R) to get table meta below.
 # Sorting into testing and training sets
 n.points <- nrow(meta);
 sampling.rate <- 0.8;
@@ -71,11 +208,11 @@ vnl.knn;
 #     train.kknn(formula = formula(THRESHOLD_TIME ~ .), data = vnl.train,     kmax = 50, distance = 1)
 #
 # Type of response variable: continuous
-# minimal mean absolute error: 104.2534
-# Minimal mean squared error: 22701.78
+# minimal mean absolute error: 1.633847
+# Minimal mean squared error: 4.664447
 # Best kernel: optimal
-# Best k: 28
-plot(vnl.train$THRESHOLD_TIME, vnl.knn$fitted.values[[28]][1:356], pch = vnl.train$INT_FLAG+22);
+# Best k: 14
+plot(vnl.train$THRESHOLD_TIME, vnl.knn$fitted.values[[14]][1:356], pch = vnl.train$INT_FLAG+22);
 # And it's terrible!
 # Another try
 model1 <- train.kknn(`THRESHOLD_TIME` ~ ., data = vnl.train, kmax = 50)
@@ -83,15 +220,15 @@ model1 <- train.kknn(`THRESHOLD_TIME` ~ ., data = vnl.train, kmax = 50)
 #     train.kknn(formula = THRESHOLD_TIME ~ ., data = vnl.train, kmax = 50)
 #
 # Type of response variable: continuous
-# minimal mean absolute error: 108.8319
-# Minimal mean squared error: 22547.23
+# minimal mean absolute error: 1.924233
+# Minimal mean squared error: 6.260451
 # Best kernel: optimal
-# Best k: 25
+# Best k: 20
 prediction1 <- predict(model1, vnl.test);
 prediction1 <- ceil(prediction1);
 CM1 <- table(vnl.test$THRESHOLD_TIME, prediction1);
 accuracy1 <- (sum(diag(CM1)))/sum(CM1);
-accuracy1; # 0.0225
+accuracy1; # 0.1797753
 # Try again!
 vnl.knn2 <- kknn(formula = formula(`THRESHOLD_TIME` ~ .),
                 train = vnl.train, test = vnl.test, k = 28, distance = 1);
@@ -114,7 +251,7 @@ vnl.knn3 <- kknn(formula = formula(`THRESHOLD_TIME` ~ `COMPONENT_ID` + #`INT_FLA
                                       `ORDERING_DATE2_-3` + `ORDERING_DATE2_-4` + `ORDERING_DATE2_-5` +
                                       `ORDERING_DATE2_-6` + `ORDERING_DATE2_-7` + `ORDERING_DATE2_-8` +
                                       `ORDERING_DATE2_-9` + `ORDERING_DATE2_-10`),
-                train = vnl.train, test = vnl.test, k = 28, distance = 1);
+                train = vnl.train, test = vnl.test, k = 14, distance = 1);
 # Extracting the prediction
 fit3 <- fitted(vnl.knn3);
 table(vnl.test$THRESHOLD_TIME, fit3);
@@ -257,6 +394,7 @@ points(meta2$THRESHOLD_TIME, classifier3$predictions, pch = meta2$INT_FLAG+22, p
 
 ## CLASSIFYING FOR INT_FLAG
 # Trying binary classifier to predict if patient belongs to INT_FLAG==1 category.
+flag.cut <- 0.5;
 vnl.knn.flag <- train.kknn(formula = formula(`INT_FLAG` ~ .),
                       data = vnl.train, kmax = 50, distance = 1);
 vnl.knn.flag;
@@ -264,30 +402,137 @@ vnl.knn.flag;
 #     train.kknn(formula = formula(INT_FLAG ~ .), data = vnl.train,     kmax = 50, distance = 1)
 #
 # Type of response variable: continuous
-# minimal mean absolute error: 0.06741573
-# Minimal mean squared error: 0.04686007
+# minimal mean absolute error: 0.3679775
+# Minimal mean squared error: 0.2113924
 # Best kernel: optimal
-# Best k: 13
-vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[13]][1:356];
+# Best k: 21
+vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[21]][1:356];
 # Need 1 or 0
-vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > 0.2) 1 else 0}, FUN.VALUE = c(1));
+vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
 CM.flag1 <- table(vnl.knn.flag1, vnl.train$INT_FLAG);
 CM.flag1;
 # vnl.knn.flag1     0   1
-#               0 160   7
-#               1  23 166
+#               0  144  76
+#               1   35 101
 accuracy.flag1 <- (sum(diag(CM.flag1)))/sum(CM.flag1);
-accuracy.flag1; # [1] 0.9157303
+accuracy.flag1; # [1] 0.6882022
 prediction.flag1 <- predict(vnl.knn.flag, vnl.test);
-prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > 0.2) 1 else 0},
+prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > flag.cut) 1 else 0},
                             FUN.VALUE = c(1));
 CM.prediction.flag1 <- table(prediction.flag1, vnl.test$INT_FLAG);
 CM.prediction.flag1;
 # prediction.flag1      0  1
-#                    0 41  0
-#                    1  5 43
+#                   0 40  20
+#                   1 10 19
 accuracy.prediction.flag1 <- (sum(diag(CM.prediction.flag1)))/sum(CM.prediction.flag1);
-accuracy.prediction.flag1; # [1] 0.9438202
+accuracy.prediction.flag1; # [1] 0.6629213
+
+# Finding best flag.cut
+findbest.flag.cut <- data.frame(flag.cut = numeric(0),
+                                test.accuracy = numeric(0), predict.accuracy = numeric(0));
+for (j in seq(0, 1, 0.05)){
+    print(j); flag.cut <- j;
+    vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[21]][1:356];
+    vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
+    CM.flag1 <- table(vnl.knn.flag1, vnl.train$INT_FLAG);
+    accuracy.flag1 <- (sum(diag(CM.flag1)))/sum(CM.flag1);
+    print(accuracy.flag1);
+    prediction.flag1 <- predict(vnl.knn.flag, vnl.test);
+    prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > flag.cut) 1 else 0},
+                                FUN.VALUE = c(1));
+    CM.prediction.flag1 <- table(prediction.flag1, vnl.test$INT_FLAG);
+    accuracy.prediction.flag1 <- (sum(diag(CM.prediction.flag1)))/sum(CM.prediction.flag1);
+    print(accuracy.prediction.flag1);
+    findbest.flag.cut <- rbind(findbest.flag.cut, data.frame(flag.cut = j,
+                                                    test.accuracy = accuracy.flag1,
+                                                    predict.accuracy = accuracy.prediction.flag1))
+}
+plot(findbest.flag.cut$flag.cut, findbest.flag.cut$test.accuracy, panel.first = grid())
+plot(findbest.flag.cut$flag.cut, findbest.flag.cut$predict.accuracy, panel.first = grid())
+findbest.flag.cut[which.max(findbest.flag.cut$test.accuracy),];
+# 11      0.5     0.6882022        0.6629213
+findbest.flag.cut[which.max(findbest.flag.cut$predict.accuracy),];
+# 12     0.55     0.6685393        0.6741573
+#
+# Again, finer
+findbest.flag.cut <- data.frame(flag.cut = numeric(0),
+                                test.accuracy = numeric(0), predict.accuracy = numeric(0));
+for (j in seq(0.45, 0.65, 0.005)){
+    print(j); flag.cut <- j;
+    vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[21]][1:356];
+    vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
+    CM.flag1 <- table(vnl.knn.flag1, vnl.train$INT_FLAG);
+    accuracy.flag1 <- (sum(diag(CM.flag1)))/sum(CM.flag1);
+    print(accuracy.flag1);
+    prediction.flag1 <- predict(vnl.knn.flag, vnl.test);
+    prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > flag.cut) 1 else 0},
+                                FUN.VALUE = c(1));
+    CM.prediction.flag1 <- table(prediction.flag1, vnl.test$INT_FLAG);
+    accuracy.prediction.flag1 <- (sum(diag(CM.prediction.flag1)))/sum(CM.prediction.flag1);
+    print(accuracy.prediction.flag1);
+    findbest.flag.cut <- rbind(findbest.flag.cut, data.frame(flag.cut = j,
+                                                             test.accuracy = accuracy.flag1,
+                                                             predict.accuracy = accuracy.prediction.flag1))
+}
+plot(findbest.flag.cut$flag.cut, findbest.flag.cut$test.accuracy, panel.first = grid())
+plot(findbest.flag.cut$flag.cut, findbest.flag.cut$predict.accuracy, panel.first = grid())
+findbest.flag.cut[which.max(findbest.flag.cut$test.accuracy),];
+# 14    0.515     0.6966292        0.6853933
+findbest.flag.cut[which.max(findbest.flag.cut$predict.accuracy),];
+
+
+
+
+# Attempt with weights on lab value
+{# Trying again with weights on the day: weightFunc^(ORDERING_DATE2)
+weightFunc <- 1.1;
+vnl.knn.flag2 <- train.kknn(formula
+                            = formula(`INT_FLAG` ~ `COMPONENT_ID` + CPT_CODE +
+                                          I(`ORD_NUM_VALUE_0`*(weightFunc)^(`ORDERING_DATE2_0`) +
+                                          `ORD_NUM_VALUE_-1`*(weightFunc)^(`ORDERING_DATE2_-1`) +
+                                          `ORD_NUM_VALUE_-2`*(weightFunc)^(`ORDERING_DATE2_-2`) +
+                                          `ORD_NUM_VALUE_-3`*(weightFunc)^(`ORDERING_DATE2_-3`) +
+                                          `ORD_NUM_VALUE_-4`*(weightFunc)^(`ORDERING_DATE2_-4`) +
+                                          `ORD_NUM_VALUE_-5`*(weightFunc)^(`ORDERING_DATE2_-5`) +
+                                          `ORD_NUM_VALUE_-6`*(weightFunc)^(`ORDERING_DATE2_-6`) +
+                                          `ORD_NUM_VALUE_-7`*(weightFunc)^(`ORDERING_DATE2_-7`) +
+                                          `ORD_NUM_VALUE_-8`*(weightFunc)^(`ORDERING_DATE2_-8`) +
+                                          `ORD_NUM_VALUE_-9`*(weightFunc)^(`ORDERING_DATE2_-9`) +
+                                          `ORD_NUM_VALUE_-10`*(weightFunc)^(`ORDERING_DATE2_-10`)) +
+                                          AGE + SEX_C + ETHNIC_GROUP_C + PCP_PROV_ID + PAT_MRN +
+                                          LNT_OF_STY +
+                                          READMT_WITHIN_30_DAYS + ADMT_DIAG + ADMT_MD +
+                                          ADMT_NURSS_STTN + ADMT_SRC + ADMT_TYP + PRINC_PROC +
+                                          REFRL_SRC + REFRG_MD + APR_DRG_CD + APR_SEV_LVL +
+                                          MS_DRG + DISCHRG_DEPT + DISCHRG_DISPOS),
+                            data = vnl.train, kmax = 200, distance = 1);
+vnl.knn.flag2;
+# Type of response variable: continuous
+# minimal mean absolute error: 0.4733399
+# Minimal mean squared error: 0.2418614
+# Best kernel: optimal
+# Best k: 105
+}
+vnl.knn.flag2 <- vnl.knn.flag2$fitted.values[[105]][1:356];
+# Need 1 or 0
+vnl.knn.flag2 <-  vapply(vnl.knn.flag2, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
+CM.flag2 <- table(vnl.knn.flag2, vnl.train$INT_FLAG);
+CM.flag2;
+#   vnl.knn.flag2   0   1
+#               0 122  83
+#               1  57  94
+accuracy.flag2 <- (sum(diag(CM.flag2)))/sum(CM.flag2);
+accuracy.flag2; # [1] 0.6067416
+prediction.flag2 <- predict(vnl.knn.flag, vnl.test);
+prediction.flag2 <-  vapply(prediction.flag2, FUN = function(x){if (x > flag.cut) 1 else 0},
+                            FUN.VALUE = c(1));
+CM.prediction.flag2 <- table(prediction.flag2, vnl.test$INT_FLAG);
+CM.prediction.flag2;
+#   prediction.flag2  0  1
+#                   0 40 20
+#                   1 10 19
+accuracy.prediction.flag2 <- (sum(diag(CM.prediction.flag2)))/sum(CM.prediction.flag2);
+accuracy.prediction.flag2; # [1] 0.6629213
 
 
 ############## BELOW IS NOT FINISHED!!!!
