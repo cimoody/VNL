@@ -19,7 +19,8 @@ for (i in 1:length(listfiles)) {
 }
 
 # Merging population and lab data
-mergedDF <-  merge.data.frame(goodDataOrdered10DaysBeforeThreshold, goodpop);
+# mergedDF <-  merge.data.frame(goodDataOrdered10DaysBeforeThreshold, goodpop);
+mergedDF <-  merge.data.frame(goodDataOrdered10DaysBeforeThreshold_alignMax, goodpop);
 
 str(mergedDF);
 # Things to Check
