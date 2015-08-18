@@ -86,7 +86,7 @@ addProperTime <- function(ListOfDataFrames, t0DataFrame){
 
 # Function to return a dataframe with the proper time
 returnProperTime <- function(originalListOfDataFrames) {
-    # Return a dataframe with the proper time
+    # Return a dataframe with the proper time. Set to start uninteresting patients at t0 = 0
     ListOfDataFrames <- normalStart(originalListOfDataFrames);
     if (is.numeric(ListOfDataFrames)) {return(0);}
     properTime <- t0Finder(ListOfDataFrames);
