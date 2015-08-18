@@ -101,13 +101,20 @@ addORDDATE2 <- function(ListOfDataFrames) {
 }
 
 # Function to start PROPER_TIME for INT_FLAG==0 at some random negative time before 100 days
-startPTIME <- function(ListOfDataFrames){
+startPTIME <- function(ListOfDataFrames, random = 1){
     # Function to start PROPER_TIME for INT_FLAG==0 at some random negative time before 100 days
     x <- sample(183:731, length(ListOfDataFrames), replace = F);
     for (j in 1:length(ListOfDataFrames)){
-        if (ListOfDataFrames[[j]]$PROPER_TIME[1] == 0 & ListOfDataFrames[[j]]$INT_FLAG[1] == 0)
-            ListOfDataFrames[[j]]$PROPER_TIME <- as.numeric(
-                ListOfDataFrames[[j]]$PROPER_TIME) - x[j]
+        if (ListOfDataFrames[[j]]$PROPER_TIME[1] == 0 & ListOfDataFrames[[j]]$INT_FLAG[1] == 0){
+            if (!random) {
+                y <- as.numeric(ListOfDataFrames[[j]][which.max(ListOfDataFrames[[j]]$ORD_NUM_VALUE),]$PROPER_TIME);
+                ListOfDataFrames[[j]]$PROPER_TIME <- as.numeric(
+                    ListOfDataFrames[[j]]$PROPER_TIME) - y;
+            } else if (random) {
+                ListOfDataFrames[[j]]$PROPER_TIME <- as.numeric(
+                    ListOfDataFrames[[j]]$PROPER_TIME) - x[j];
+            }
+        }
     }
     return(ListOfDataFrames);
 }
@@ -372,7 +379,7 @@ reorderPT <- function(ListOfDataFrames){
     #     > ListOfDataFrames <- returnProperTime(originalListOfDataFrames);
     #     > ListOfDataFrames <- getMeanSDListDataFrames(ListOfDataFrames);
     #     > ListOfDataFrames <- addORDDATE2(ListOfDataFrames);
-    #     > ListOfDataFrames <- startPTIME(ListOfDataFrames);
+    #     > ListOfDataFrames <- startPTIME(ListOfDataFrames, 0);
     #       names(ListOfDataFrames[[j]])
     #       [1] "ORDERING_DATE"  "ORD_NUM_VALUE"  "REFERENCE_UNIT" "PAT_ID"         "REFERENCE_HIGH" "REFERENCE_LOW"
     #       [7] "CPT_CODE"       "COMPONENT_ID"   "MIN_RAW_LABS"   "PROPER_TIME"    "INT_FLAG"       "SD_ORD_VAL"
@@ -394,13 +401,13 @@ reorderPT <- function(ListOfDataFrames){
         ChangingDF$ORD_NUM_VALUE <- ChangingDF$ORD_NUM_VALUE/f2n(NotChangingDF$REFERENCE_HIGH);
         ChangingDF$SD_ORD_VAL <- ChangingDF$SD_ORD_VAL/f2n(NotChangingDF$REFERENCE_HIGH);
         if (as.numeric(min(ChangingDF$PROPER_TIME)) > -10) {
-            print(j); print("AAAAAA");
+            # print(j); print("AAAAAA");
             ChangingDF <- case1(ChangingDF, varsChanging);
         } else if ( as.numeric(min(ChangingDF$PROPER_TIME)) < -10) {
-            print(j); print("BBBBBB");
+            # print(j); print("BBBBBB");
             ChangingDF <- case2(ChangingDF, varsChanging);
         } else if ( as.numeric(min(ChangingDF$PROPER_TIME)) == -10){
-            print(j); print("CCCCCC");
+            # print(j); print("CCCCCC");
             ChangingDF <- case3(ChangingDF, varsChanging);
         } else {print("BREAK"); break;}
         Order <- cbind(NotChangingDF, ChangingDF);
@@ -412,7 +419,7 @@ reorderPT <- function(ListOfDataFrames){
 }
 
 # Getting matrix for 'meta' patient for regression from lists
-getTimeTrainMatrix <- function(originalListOfDataFrames){
+getTimeTrainMatrix <- function(originalListOfDataFrames, random = 1){
     # Getting matrix for 'meta' patient for regression from lists
     # Function returnProperTime() from alignThreshold.R - returns PROPER_TIME and INT_FLAG
     ListOfDataFrames <- returnProperTime(originalListOfDataFrames);
@@ -423,7 +430,7 @@ getTimeTrainMatrix <- function(originalListOfDataFrames){
     ListOfDataFrames <- addORDDATE2(ListOfDataFrames);
     # Starting patients that do not cross threshold at random
     # negative days between 6 months and 2 years before threshold
-    ListOfDataFrames <- startPTIME(ListOfDataFrames);
+    ListOfDataFrames <- startPTIME(ListOfDataFrames, random);
     # Organizing into giant dataframe with only 10 days before threshold
     TrainDF <- reorderPT(ListOfDataFrames);
     #     # Subset TrainDF into only interesting cases (INT_FLAG==1) # Oleg said to remove
@@ -434,46 +441,94 @@ getTimeTrainMatrix <- function(originalListOfDataFrames){
 
 # Making one big dataframe
 makeTimeDF = 0;
+# The if statements below need to be run line-by-line b/c some lab lists are reduced to zero by functions and fail
 if (makeTimeDF){
-        BUN_80048_1518_reg <- getTimeTrainMatrix(BUN_80048_1518_gt20)
-        BUN_80053.01_1518_reg <- getTimeTrainMatrix(BUN_80053.01_1518_gt20)
-        BUN_80069_1518_reg <- getTimeTrainMatrix(BUN_80069_1518_gt20)
-        Creat_80048_1523_reg <- getTimeTrainMatrix(Creat_80048_1523_gt20)
-        Creat_80053.01_1523_reg <- getTimeTrainMatrix(Creat_80053.01_1523_gt20)
-        Creat_80069_1523_reg <- getTimeTrainMatrix(Creat_80069_1523_gt20)
-        K_80048_1520_reg3 <- getTimeTrainMatrix(K_80048_1520_gt20);
-        K_80053.01_1520_reg <- getTimeTrainMatrix(K_80053.01_1520_gt20)
-        K_80069_1520_reg <- getTimeTrainMatrix(K_80069_1520_gt20)
-        Na_80048_1519_reg <- getTimeTrainMatrix(Na_80048_1519_gt20)
-        Na_80053.01_1519_reg <- getTimeTrainMatrix(Na_80053.01_1519_gt20)
-        Na_80069_1519_reg <- getTimeTrainMatrix(Na_80069_1519_gt20)
-        PLATE_85027_1504_reg <- getTimeTrainMatrix(PLATE_85027_1504_gt20)
-        PLATE_CBCD_1504_reg <- getTimeTrainMatrix(PLATE_CBCD_1504_gt20)
-        WBC_85027_1496_reg <- getTimeTrainMatrix(WBC_85027_1496_gt20)
-        WBC_CBCD_1496_reg <- getTimeTrainMatrix(WBC_CBCD_1496_gt20)
+    BUN_80048_1518_reg <- getTimeTrainMatrix(BUN_80048_1518_gt20)
+    BUN_80053.01_1518_reg <- getTimeTrainMatrix(BUN_80053.01_1518_gt20)
+    BUN_80069_1518_reg <- getTimeTrainMatrix(BUN_80069_1518_gt20)
+    Creat_80048_1523_reg <- getTimeTrainMatrix(Creat_80048_1523_gt20)
+    Creat_80053.01_1523_reg <- getTimeTrainMatrix(Creat_80053.01_1523_gt20)
+    Creat_80069_1523_reg <- getTimeTrainMatrix(Creat_80069_1523_gt20)
+    K_80048_1520_reg3 <- getTimeTrainMatrix(K_80048_1520_gt20);
+    K_80053.01_1520_reg <- getTimeTrainMatrix(K_80053.01_1520_gt20)
+    K_80069_1520_reg <- getTimeTrainMatrix(K_80069_1520_gt20)
+    Na_80048_1519_reg <- getTimeTrainMatrix(Na_80048_1519_gt20)
+    Na_80053.01_1519_reg <- getTimeTrainMatrix(Na_80053.01_1519_gt20)
+    Na_80069_1519_reg <- getTimeTrainMatrix(Na_80069_1519_gt20)
+    PLATE_85027_1504_reg <- getTimeTrainMatrix(PLATE_85027_1504_gt20)
+    PLATE_CBCD_1504_reg <- getTimeTrainMatrix(PLATE_CBCD_1504_gt20)
+    WBC_85027_1496_reg <- getTimeTrainMatrix(WBC_85027_1496_gt20)
+    WBC_CBCD_1496_reg <- getTimeTrainMatrix(WBC_CBCD_1496_gt20)
 
-        # Making into one list
-        goodDataOrdered10DaysBeforeThreshold <- rbind(BUN_80048_1518_reg, BUN_80053.01_1518_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Creat_80048_1523_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Creat_80053.01_1523_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, K_80048_1520_reg3);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, K_80053.01_1520_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, K_80069_1520_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Na_80048_1519_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Na_80053.01_1519_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, PLATE_CBCD_1504_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, PLATE_85027_1504_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, WBC_85027_1496_reg);
-        goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, WBC_CBCD_1496_reg);
+    # Making into one list
+    goodDataOrdered10DaysBeforeThreshold <- rbind(BUN_80048_1518_reg, BUN_80053.01_1518_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Creat_80048_1523_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Creat_80053.01_1523_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, K_80048_1520_reg3);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, K_80053.01_1520_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, K_80069_1520_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Na_80048_1519_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Na_80053.01_1519_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, PLATE_CBCD_1504_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, PLATE_85027_1504_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, WBC_85027_1496_reg);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, WBC_CBCD_1496_reg);
 
-        save(goodDataOrdered10DaysBeforeThreshold,
-             BUN_80048_1518_reg, BUN_80053.01_1518_gt20,
-             Creat_80048_1523_reg, Creat_80053.01_1523_reg,
-             K_80048_1520_reg3, K_80053.01_1520_reg, K_80069_1520_reg,
-             Na_80048_1519_reg, Na_80053.01_1519_reg,
-             PLATE_CBCD_1504_reg, PLATE_85027_1504_reg,
-             WBC_85027_1496_reg, WBC_CBCD_1496_reg,
-             file = sprintf("%s%s", dDir, "TimeOrdered_lists_gt20.rda"));
+    save(goodDataOrdered10DaysBeforeThreshold,
+         BUN_80048_1518_reg, BUN_80053.01_1518_reg,
+         Creat_80048_1523_reg, Creat_80053.01_1523_reg,
+         K_80048_1520_reg3, K_80053.01_1520_reg, K_80069_1520_reg,
+         Na_80048_1519_reg, Na_80053.01_1519_reg,
+         PLATE_CBCD_1504_reg, PLATE_85027_1504_reg,
+         WBC_85027_1496_reg, WBC_CBCD_1496_reg,
+         file = sprintf("%s%s", dDir, "TimeOrdered_lists_gt20.rda"));
+}
+if (makeTimeDF){
+    BUN_80048_1518_reg2 <- getTimeTrainMatrix(BUN_80048_1518_gt20, 0);
+    BUN_80053.01_1518_reg2 <- getTimeTrainMatrix(BUN_80053.01_1518_gt20, 0);
+    BUN_80069_1518_reg2 <- getTimeTrainMatrix(BUN_80069_1518_gt20, 0);
+    Creat_80048_1523_reg2 <- getTimeTrainMatrix(Creat_80048_1523_gt20, 0);
+    Creat_80053.01_1523_reg2 <- getTimeTrainMatrix(Creat_80053.01_1523_gt20, 0);
+    Creat_80069_1523_reg2 <- getTimeTrainMatrix(Creat_80069_1523_gt20, 0);
+    K_80048_1520_reg4 <- getTimeTrainMatrix(K_80048_1520_gt20, 0);
+    K_80053.01_1520_reg2 <- getTimeTrainMatrix(K_80053.01_1520_gt20, 0);
+    K_80069_1520_reg2 <- getTimeTrainMatrix(K_80069_1520_gt20, 0);
+    Na_80048_1519_reg2 <- getTimeTrainMatrix(Na_80048_1519_gt20, 0);
+    Na_80053.01_1519_reg2 <- getTimeTrainMatrix(Na_80053.01_1519_gt20, 0);
+    Na_80069_1519_reg2 <- getTimeTrainMatrix(Na_80069_1519_gt20, 0);
+    PLATE_85027_1504_reg2 <- getTimeTrainMatrix(PLATE_85027_1504_gt20, 0);
+    PLATE_CBCD_1504_reg2 <- getTimeTrainMatrix(PLATE_CBCD_1504_gt20, 0);
+    WBC_85027_1496_reg2 <- getTimeTrainMatrix(WBC_85027_1496_gt20, 0);
+    WBC_CBCD_1496_reg2 <- getTimeTrainMatrix(WBC_CBCD_1496_gt20, 0);
+
+    # Making into one list
+    goodDataOrdered10DaysBeforeThreshold <- rbind(BUN_80048_1518_reg2, BUN_80053.01_1518_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Creat_80048_1523_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Creat_80053.01_1523_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, K_80048_1520_reg4);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, K_80053.01_1520_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, K_80069_1520_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Na_80048_1519_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, Na_80053.01_1519_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, PLATE_CBCD_1504_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, PLATE_85027_1504_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, WBC_85027_1496_reg2);
+    goodDataOrdered10DaysBeforeThreshold <- rbind(goodDataOrdered10DaysBeforeThreshold, WBC_CBCD_1496_reg2);
+
+    goodDataOrdered10DaysBeforeThreshold_alignMax <- goodDataOrdered10DaysBeforeThreshold;
+    save(goodDataOrdered10DaysBeforeThreshold_alignMax,
+         BUN_80048_1518_reg2, BUN_80053.01_1518_reg2,
+         Creat_80048_1523_reg2, Creat_80053.01_1523_reg2,
+         K_80048_1520_reg4, K_80053.01_1520_reg2, K_80069_1520_reg2,
+         Na_80048_1519_reg2, Na_80053.01_1519_reg2,
+         PLATE_CBCD_1504_reg2, PLATE_85027_1504_reg2,
+         WBC_85027_1496_reg2, WBC_CBCD_1496_reg2,
+         file = sprintf("%s%s", dDir, "TimeOrdered_lists_gt20_alignedMax.rda"));
+}
+# Loading all files - it won't work as a function :(
+listfiles <- list.files(path = dDir, pattern = "\\.rda");
+for (i in 1:length(listfiles)) {
+    load(file = sprintf("%s%s", dDir, listfiles[i]));
 }
 
 metaPatient <- goodDataOrdered10DaysBeforeThreshold[
