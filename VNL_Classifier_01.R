@@ -1,5 +1,5 @@
 ## Code for attempt at creating a classifier for Value Next Lab data
-##
+## to find patients that will have labs taht cross the threshold
 ## Created by Cristina I Moody
 ## July 2015
 
