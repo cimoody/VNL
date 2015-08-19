@@ -431,18 +431,18 @@ accuracy.prediction.flag1; # [1] 0.6629213
 findbest.flag.cut <- data.frame(flag.cut = numeric(0),
                                 test.accuracy = numeric(0), predict.accuracy = numeric(0));
 for (j in seq(0, 1, 0.05)){
-    print(j); flag.cut <- j;
+    # print(j); flag.cut <- j;
     vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[21]][1:356];
     vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
     CM.flag1 <- table(vnl.knn.flag1, vnl.train$INT_FLAG);
     accuracy.flag1 <- (sum(diag(CM.flag1)))/sum(CM.flag1);
-    print(accuracy.flag1);
+    # print(accuracy.flag1);
     prediction.flag1 <- predict(vnl.knn.flag, vnl.test);
     prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > flag.cut) 1 else 0},
                                 FUN.VALUE = c(1));
     CM.prediction.flag1 <- table(prediction.flag1, vnl.test$INT_FLAG);
     accuracy.prediction.flag1 <- (sum(diag(CM.prediction.flag1)))/sum(CM.prediction.flag1);
-    print(accuracy.prediction.flag1);
+    # print(accuracy.prediction.flag1);
     findbest.flag.cut <- rbind(findbest.flag.cut, data.frame(flag.cut = j,
                                                     test.accuracy = accuracy.flag1,
                                                     predict.accuracy = accuracy.prediction.flag1))
@@ -458,18 +458,18 @@ findbest.flag.cut[which.max(findbest.flag.cut$predict.accuracy),];
 findbest.flag.cut <- data.frame(flag.cut = numeric(0),
                                 test.accuracy = numeric(0), predict.accuracy = numeric(0));
 for (j in seq(0.45, 0.65, 0.005)){ # finding best value for flag.cut between 0.45 and 0.65
-    print(j); flag.cut <- j;
+    # print(j); flag.cut <- j;
     vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[21]][1:356];
     vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
     CM.flag1 <- table(vnl.knn.flag1, vnl.train$INT_FLAG);
     accuracy.flag1 <- (sum(diag(CM.flag1)))/sum(CM.flag1);
-    print(accuracy.flag1);
+    # print(accuracy.flag1);
     prediction.flag1 <- predict(vnl.knn.flag, vnl.test);
     prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > flag.cut) 1 else 0},
                                 FUN.VALUE = c(1));
     CM.prediction.flag1 <- table(prediction.flag1, vnl.test$INT_FLAG);
     accuracy.prediction.flag1 <- (sum(diag(CM.prediction.flag1)))/sum(CM.prediction.flag1);
-    print(accuracy.prediction.flag1);
+    # print(accuracy.prediction.flag1);
     findbest.flag.cut <- rbind(findbest.flag.cut, data.frame(flag.cut = j,
                                                              test.accuracy = accuracy.flag1,
                                                              predict.accuracy = accuracy.prediction.flag1))
