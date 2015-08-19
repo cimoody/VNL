@@ -25,6 +25,7 @@ mergedDF <-  merge.data.frame(goodDataOrdered10DaysBeforeThreshold_alignMax, goo
 
 # Used function from VNL_kNN_kMeans.R Must source(VNL_kNN_kMeans.R) to use it.
 meta <- createMeta(mergedDF)
+mergedDFg <- meta;
 
 # Testing
 gtest <- head(mergedDFg, 10);
@@ -73,7 +74,7 @@ plot(gArow, layout = layout.fruchterman.reingold(gArow))
 #     add_vertices(length(gtable$Var1), color = "blue")
 # %>%
 #     add_edges( , color = "pink")
-plot(g)
+# plot(g)
 
 
 # Example
