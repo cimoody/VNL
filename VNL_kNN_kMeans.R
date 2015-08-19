@@ -394,7 +394,7 @@ points(meta2$THRESHOLD_TIME, classifier3$predictions, pch = meta2$INT_FLAG+22, p
 
 ## CLASSIFYING FOR INT_FLAG
 # Trying binary classifier to predict if patient belongs to INT_FLAG==1 category.
-flag.cut <- 0.5;
+flag.cut <- 0.515;
 vnl.knn.flag <- train.kknn(formula = formula(`INT_FLAG` ~ .),
                       data = vnl.train, kmax = 50, distance = 1);
 vnl.knn.flag;
@@ -479,26 +479,26 @@ plot(findbest.flag.cut$flag.cut, findbest.flag.cut$predict.accuracy, panel.first
 findbest.flag.cut[which.max(findbest.flag.cut$test.accuracy),];
 # 14    0.515     0.6966292        0.6853933
 findbest.flag.cut[which.max(findbest.flag.cut$predict.accuracy),];
-
+# Setting flag.cut to best f value of 0.515 on line 397
 
 
 
 # Attempt with weights on lab value
-{# Trying again with weights on the day: weightFunc^(ORDERING_DATE2)
-weightFunc <- 1.1;
+{# Trying again with weights on the day: weightConst^(ORDERING_DATE2)
+weightConst <- 1.1;
 vnl.knn.flag2 <- train.kknn(formula
                             = formula(`INT_FLAG` ~ `COMPONENT_ID` + CPT_CODE +
-                                          I(`ORD_NUM_VALUE_0`*(weightFunc)^(`ORDERING_DATE2_0`) +
-                                          `ORD_NUM_VALUE_-1`*(weightFunc)^(`ORDERING_DATE2_-1`) +
-                                          `ORD_NUM_VALUE_-2`*(weightFunc)^(`ORDERING_DATE2_-2`) +
-                                          `ORD_NUM_VALUE_-3`*(weightFunc)^(`ORDERING_DATE2_-3`) +
-                                          `ORD_NUM_VALUE_-4`*(weightFunc)^(`ORDERING_DATE2_-4`) +
-                                          `ORD_NUM_VALUE_-5`*(weightFunc)^(`ORDERING_DATE2_-5`) +
-                                          `ORD_NUM_VALUE_-6`*(weightFunc)^(`ORDERING_DATE2_-6`) +
-                                          `ORD_NUM_VALUE_-7`*(weightFunc)^(`ORDERING_DATE2_-7`) +
-                                          `ORD_NUM_VALUE_-8`*(weightFunc)^(`ORDERING_DATE2_-8`) +
-                                          `ORD_NUM_VALUE_-9`*(weightFunc)^(`ORDERING_DATE2_-9`) +
-                                          `ORD_NUM_VALUE_-10`*(weightFunc)^(`ORDERING_DATE2_-10`)) +
+                                          I(`ORD_NUM_VALUE_0`*(weightConst)^(`ORDERING_DATE2_0`) +
+                                          `ORD_NUM_VALUE_-1`*(weightConst)^(`ORDERING_DATE2_-1`) +
+                                          `ORD_NUM_VALUE_-2`*(weightConst)^(`ORDERING_DATE2_-2`) +
+                                          `ORD_NUM_VALUE_-3`*(weightConst)^(`ORDERING_DATE2_-3`) +
+                                          `ORD_NUM_VALUE_-4`*(weightConst)^(`ORDERING_DATE2_-4`) +
+                                          `ORD_NUM_VALUE_-5`*(weightConst)^(`ORDERING_DATE2_-5`) +
+                                          `ORD_NUM_VALUE_-6`*(weightConst)^(`ORDERING_DATE2_-6`) +
+                                          `ORD_NUM_VALUE_-7`*(weightConst)^(`ORDERING_DATE2_-7`) +
+                                          `ORD_NUM_VALUE_-8`*(weightConst)^(`ORDERING_DATE2_-8`) +
+                                          `ORD_NUM_VALUE_-9`*(weightConst)^(`ORDERING_DATE2_-9`) +
+                                          `ORD_NUM_VALUE_-10`*(weightConst)^(`ORDERING_DATE2_-10`)) +
                                           AGE + SEX_C + ETHNIC_GROUP_C + PCP_PROV_ID + PAT_MRN +
                                           LNT_OF_STY +
                                           READMT_WITHIN_30_DAYS + ADMT_DIAG + ADMT_MD +
@@ -513,6 +513,7 @@ vnl.knn.flag2;
 # Best kernel: optimal
 # Best k: 105
 }
+# Attempt with weights on lab value
 vnl.knn.flag2 <- vnl.knn.flag2$fitted.values[[105]][1:356];
 # Need 1 or 0
 vnl.knn.flag2 <-  vapply(vnl.knn.flag2, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
@@ -533,6 +534,8 @@ CM.prediction.flag2;
 #                   1 10 19
 accuracy.prediction.flag2 <- (sum(diag(CM.prediction.flag2)))/sum(CM.prediction.flag2);
 accuracy.prediction.flag2; # [1] 0.6629213
+# Attempt with weights on lab value is not as good.
+# Plus weightConst was guessed arbitrarily.
 
 
 ############## BELOW IS NOT FINISHED!!!!
