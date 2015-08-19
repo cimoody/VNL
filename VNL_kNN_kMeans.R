@@ -169,7 +169,7 @@ createMeta <- function(mDF){
 
 meta <- createMeta(mergedDF)
 
-# NEED to source(VNL_graph.R) to get table meta below or use createMeta() above
+# NEED to use createMeta() above
 # Sorting into testing and training sets
 n.points <- nrow(meta);
 sampling.rate <- 0.8;
