@@ -55,7 +55,8 @@ cutoff <- 50;
 ## FUNCTION THAT RETURNS LAB RESULT AND ORDERING DATA FOR ANY GIVEN LAB
 getResultDate <- function(cutoff, tID){
     # RETURNS LAB RESULT AND ORDERING DATA FOR ANY GIVEN LAB
-    #
+    # Set which lab to examine with tID a two component vector of the CPT_CODE (string) and COMPONENT_ID (numeric).
+    # Set the minimum number of raw labs with cutoff (actual number may be less due to invalid results or multiplies per day)
     # Make a variable that is a combination of ENC_CSN_ID, CPT_CODE, COMPONENT_ID
     # CPT_CODE & COMPONENT_ID are the lab
     labnames <- paste(goodlab$ENC_CSN_ID, goodlab$CPT_CODE, goodlab$COMPONENT_ID, sep = "_");
@@ -160,7 +161,7 @@ if (makeLists) { # Code to create lists of dataframes. Set makeLists <- 1 to run
     WBC_CBCD_1496_gt20 <- getResultDate(cutoff = 20, tID = c("CPT_CODE"="CBCD", "COMPONENT_ID"= as.numeric(1496)));
 }
 # Saving Lists
-if (makeLists) {
+if (makeLists) { # Code to save the lists made above as .rda files
     save(BUN_80048_1518_gt20, BUN_80053.01_1518_gt20, BUN_80069_1518_gt20,
          file = sprintf("%s%s", dDir, "BUN_lists_gt20.rda"));
     save(Creat_80048_1523_gt20, Creat_80053.01_1523_gt20, Creat_80069_1523_gt20,
