@@ -93,7 +93,7 @@ testf <- function(testList){
 
 # Function to create ORDERING_DATE2
 addORDDATE2 <- function(ListOfDataFrames) {
-    # Function to create ORDERING_DATE2
+    # Function to create ORDERING_DATE2 which is the difference in days from the first lab
     for (j in 1:length(ListOfDataFrames)){
         ListOfDataFrames[[j]]$ORDERING_DATE2 <- ListOfDataFrames[[j]]$ORDERING_DATE - ListOfDataFrames[[j]]$ORDERING_DATE[1];
     }
@@ -119,6 +119,7 @@ startPTIME <- function(ListOfDataFrames, random = 1){
     return(ListOfDataFrames);
 }
 
+# Linear regression attempt
 # First linear regression
 K_80048_1520_reg <- getTrainMatrix(K_80048_1520_gt20);
 # Don't care for regression about what happens
@@ -174,6 +175,7 @@ with(data = x2, expr = errbar(x2$PROPER_TIME, x2$fit, fit + upr, fit - lwr,
                               bg = alpha("gray", 0.1), col = alpha("gray", 1),
                               pch = 21, add = T, cap = 0.01));
 
+# Another way of ordering the data
 # New ideas
 # Case 1 - when I do not have 10 days before the threshold
 {
@@ -420,7 +422,7 @@ reorderPT <- function(ListOfDataFrames){
 
 # Getting matrix for 'meta' patient for regression from lists
 getTimeTrainMatrix <- function(originalListOfDataFrames, random = 1){
-    # Getting matrix for 'meta' patient for regression from lists
+    # Getting matrix for 'meta' patient for regression from lists in time
     # Function returnProperTime() from alignThreshold.R - returns PROPER_TIME and INT_FLAG
     ListOfDataFrames <- returnProperTime(originalListOfDataFrames);
     if (class(ListOfDataFrames)=='numeric') {print("NO SERIES PASSED PROPER_TIME CUT"); break;}
@@ -441,7 +443,8 @@ getTimeTrainMatrix <- function(originalListOfDataFrames, random = 1){
 
 # Making one big dataframe
 makeTimeDF = 0;
-# The if statements below need to be run line-by-line b/c some lab lists are reduced to zero by functions and fail
+# The if statements below need to be run line-by-line b/c some
+# of the lab lists are reduced to zero by functions and fail
 if (makeTimeDF){
     BUN_80048_1518_reg <- getTimeTrainMatrix(BUN_80048_1518_gt20)
     BUN_80053.01_1518_reg <- getTimeTrainMatrix(BUN_80053.01_1518_gt20)
@@ -531,6 +534,7 @@ for (i in 1:length(listfiles)) {
     load(file = sprintf("%s%s", dDir, listfiles[i]));
 }
 
+### THIS IS THE SUBSET OF ALL PATIENTS WITH INT_FLAG = 1
 metaPatient <- goodDataOrdered10DaysBeforeThreshold[
     goodDataOrdered10DaysBeforeThreshold$INT_FLAG>0,];
 
@@ -588,7 +592,7 @@ dev.off();
 plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, col = alpha("blue", 1), bg = alpha("blue", .5), panel.first = grid());
 
 
-# 4th attempt
+# 4th attempt, NO SUBSETTING TO EXCLUDE PATIENTS WITH INT_FLAG = 0
 metaPatient4 <- goodDataOrdered10DaysBeforeThreshold;
 
 # Sorting into testing and training sets
