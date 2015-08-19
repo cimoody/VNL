@@ -167,7 +167,17 @@ createMeta <- function(mDF){
     return(meta);
 }
 
-meta <- createMeta(mergedDF)
+meta <- createMeta(mergedDF);
+
+# Separating AGE into decade bins for classifier
+meta$AGE2[meta$AGE < 30 & meta$AGE >= 20] <- '20-30';
+meta$AGE2[meta$AGE < 40 & meta$AGE >= 30] <- '30-40';
+meta$AGE2[meta$AGE < 50 & meta$AGE >= 40] <- '40-50';
+meta$AGE2[meta$AGE < 60 & meta$AGE >= 50] <- '50-60';
+meta$AGE2[meta$AGE < 70 & meta$AGE >= 60] <- '60-70';
+meta$AGE2[meta$AGE < 80 & meta$AGE >= 70] <- '70-80';
+meta$AGE2[meta$AGE <= 90 & meta$AGE >= 80] <- '80+';
+meta$AGE2 <- factor(meta$AGE2, labels = c("20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80+"))
 
 # NEED to use createMeta() above
 # Sorting into testing and training sets
@@ -208,11 +218,11 @@ vnl.knn;
 #     train.kknn(formula = formula(THRESHOLD_TIME ~ .), data = vnl.train,     kmax = 50, distance = 1)
 #
 # Type of response variable: continuous
-# minimal mean absolute error: 1.633847
-# Minimal mean squared error: 4.664447
+# minimal mean absolute error: 1.596441
+# Minimal mean squared error: 4.395575
 # Best kernel: optimal
-# Best k: 14
-plot(vnl.train$THRESHOLD_TIME, vnl.knn$fitted.values[[14]][1:356], pch = vnl.train$INT_FLAG+22);
+# Best k: 16
+plot(vnl.train$THRESHOLD_TIME, vnl.knn$fitted.values[[16]][1:356], pch = vnl.train$INT_FLAG+22);
 # And it's terrible!
 # Another try
 model1 <- train.kknn(`THRESHOLD_TIME` ~ ., data = vnl.train, kmax = 50)
@@ -220,15 +230,15 @@ model1 <- train.kknn(`THRESHOLD_TIME` ~ ., data = vnl.train, kmax = 50)
 #     train.kknn(formula = THRESHOLD_TIME ~ ., data = vnl.train, kmax = 50)
 #
 # Type of response variable: continuous
-# minimal mean absolute error: 1.924233
-# Minimal mean squared error: 6.260451
+# minimal mean absolute error: 1.941219
+# Minimal mean squared error: 6.101489
 # Best kernel: optimal
 # Best k: 20
 prediction1 <- predict(model1, vnl.test);
 prediction1 <- ceil(prediction1);
 CM1 <- table(vnl.test$THRESHOLD_TIME, prediction1);
 accuracy1 <- (sum(diag(CM1)))/sum(CM1);
-accuracy1; # 0.1797753
+accuracy1; # 0.1235955
 # Try again!
 vnl.knn2 <- kknn(formula = formula(`THRESHOLD_TIME` ~ .),
                 train = vnl.train, test = vnl.test, k = 28, distance = 1);
@@ -295,11 +305,11 @@ classifier <- IBk(THRESHOLD_TIME ~ `COMPONENT_ID` + # `INT_FLAG` +
 summary(classifier);
 # === Summary ===
 #
-#     Correlation coefficient                  0.9948
-# Mean absolute error                      5.1551
-# Root mean squared error                 24.6119
-# Relative absolute error                  2.3572 %
-# Root relative squared error             10.2073 %
+# Correlation coefficient                    1
+# Mean absolute error                      0
+# Root mean squared error                  0
+# Relative absolute error                  0      %
+# Root relative squared error              0      %
 # Total Number of Instances              445
 classifier;
 # IB1 instance-based classifier
@@ -362,15 +372,15 @@ evaluate_Weka_classifier(classifier3, numFolds = 10);
 #
 #     === Summary ===
 #
-#     Correlation coefficient                  0.7995
-# Mean absolute error                    118.1431
-# Root mean squared error                149.7029
-# Relative absolute error                 53.9482 %
-# Root relative squared error             61.999  %
+# Correlation coefficient                  0.6683
+# Mean absolute error                      3.0191
+# Root mean squared error                  3.5012
+# Relative absolute error                 72.1408 %
+# Root relative squared error             77.0219 %
 # Total Number of Instances              445
 classifier3;
 # IB1 instance-based classifier
-# using 14 nearest neighbour(s) for classification
+# using 15 nearest neighbour(s) for classification
 plot(x3$THRESHOLD_TIME, x3$fit, pch = t3, panel.first = grid(),
      col = alpha("blue", 1), bg = alpha("blue", .5),
      xlim = range(0:15),  ylim=range(-1:(max(x3$fit)+max(x3$upr))));
@@ -402,30 +412,30 @@ vnl.knn.flag;
 #     train.kknn(formula = formula(INT_FLAG ~ .), data = vnl.train,     kmax = 50, distance = 1)
 #
 # Type of response variable: continuous
-# minimal mean absolute error: 0.3679775
-# Minimal mean squared error: 0.2113924
+# minimal mean absolute error:  0.3595506
+# Minimal mean squared error: 0.2083691
 # Best kernel: optimal
-# Best k: 21
-vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[21]][1:356];
+# Best k: 17
+vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[17]][1:356];
 # Need 1 or 0
 vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
 CM.flag1 <- table(vnl.knn.flag1, vnl.train$INT_FLAG);
 CM.flag1;
 # vnl.knn.flag1     0   1
-#               0  144  76
-#               1   35 101
+#               0  136  75
+#               1   42 103
 accuracy.flag1 <- (sum(diag(CM.flag1)))/sum(CM.flag1);
-accuracy.flag1; # [1] 0.6882022
+accuracy.flag1; # [1] 0.6713483
 prediction.flag1 <- predict(vnl.knn.flag, vnl.test);
 prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > flag.cut) 1 else 0},
                             FUN.VALUE = c(1));
 CM.prediction.flag1 <- table(prediction.flag1, vnl.test$INT_FLAG);
 CM.prediction.flag1;
 # prediction.flag1      0  1
-#                   0 40  20
-#                   1 10 19
+#                   0 43  18
+#                   1  8  20
 accuracy.prediction.flag1 <- (sum(diag(CM.prediction.flag1)))/sum(CM.prediction.flag1);
-accuracy.prediction.flag1; # [1] 0.6629213
+accuracy.prediction.flag1; # [1] 0.7078652
 
 # Finding best flag.cut
 findbest.flag.cut <- data.frame(flag.cut = numeric(0),
@@ -433,12 +443,12 @@ findbest.flag.cut <- data.frame(flag.cut = numeric(0),
 for (j in seq(0, 1, 0.05)){
     # print(j); flag.cut <- j;
     vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[21]][1:356];
-    vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
+    vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > j) 1 else 0}, FUN.VALUE = c(1));
     CM.flag1 <- table(vnl.knn.flag1, vnl.train$INT_FLAG);
     accuracy.flag1 <- (sum(diag(CM.flag1)))/sum(CM.flag1);
     # print(accuracy.flag1);
     prediction.flag1 <- predict(vnl.knn.flag, vnl.test);
-    prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > flag.cut) 1 else 0},
+    prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > j) 1 else 0},
                                 FUN.VALUE = c(1));
     CM.prediction.flag1 <- table(prediction.flag1, vnl.test$INT_FLAG);
     accuracy.prediction.flag1 <- (sum(diag(CM.prediction.flag1)))/sum(CM.prediction.flag1);
@@ -450,9 +460,10 @@ for (j in seq(0, 1, 0.05)){
 plot(findbest.flag.cut$flag.cut, findbest.flag.cut$test.accuracy, panel.first = grid())
 plot(findbest.flag.cut$flag.cut, findbest.flag.cut$predict.accuracy, panel.first = grid())
 findbest.flag.cut[which.max(findbest.flag.cut$test.accuracy),];
-# 11      0.5     0.6882022        0.6629213
+# 10     0.45     0.6797753        0.6629213
+# 12     0.55     0.6769663        0.6629213
 findbest.flag.cut[which.max(findbest.flag.cut$predict.accuracy),];
-# 12     0.55     0.6685393        0.6741573
+# 11      0.5     0.6629213        0.6741573
 #
 # Again, finer
 findbest.flag.cut <- data.frame(flag.cut = numeric(0),
@@ -460,12 +471,12 @@ findbest.flag.cut <- data.frame(flag.cut = numeric(0),
 for (j in seq(0.45, 0.65, 0.005)){ # finding best value for flag.cut between 0.45 and 0.65
     # print(j); flag.cut <- j;
     vnl.knn.flag1 <- vnl.knn.flag$fitted.values[[21]][1:356];
-    vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
+    vnl.knn.flag1 <-  vapply(vnl.knn.flag1, FUN = function(x){if (x > j) 1 else 0}, FUN.VALUE = c(1));
     CM.flag1 <- table(vnl.knn.flag1, vnl.train$INT_FLAG);
     accuracy.flag1 <- (sum(diag(CM.flag1)))/sum(CM.flag1);
     # print(accuracy.flag1);
     prediction.flag1 <- predict(vnl.knn.flag, vnl.test);
-    prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > flag.cut) 1 else 0},
+    prediction.flag1 <-  vapply(prediction.flag1, FUN = function(x){if (x > j) 1 else 0},
                                 FUN.VALUE = c(1));
     CM.prediction.flag1 <- table(prediction.flag1, vnl.test$INT_FLAG);
     accuracy.prediction.flag1 <- (sum(diag(CM.prediction.flag1)))/sum(CM.prediction.flag1);
@@ -477,9 +488,10 @@ for (j in seq(0.45, 0.65, 0.005)){ # finding best value for flag.cut between 0.4
 plot(findbest.flag.cut$flag.cut, findbest.flag.cut$test.accuracy, panel.first = grid())
 plot(findbest.flag.cut$flag.cut, findbest.flag.cut$predict.accuracy, panel.first = grid())
 findbest.flag.cut[which.max(findbest.flag.cut$test.accuracy),];
-# 14    0.515     0.6966292        0.6853933
+# 3     0.46     0.6882022        0.6629213
 findbest.flag.cut[which.max(findbest.flag.cut$predict.accuracy),];
-# Setting flag.cut to best f value of 0.515 on line 397
+# 14    0.515     0.6741573        0.7078652
+# Setting flag.cut to best f value of 0.515 on line 407
 
 
 
@@ -499,7 +511,7 @@ vnl.knn.flag2 <- train.kknn(formula
                                           `ORD_NUM_VALUE_-8`*(weightConst)^(`ORDERING_DATE2_-8`) +
                                           `ORD_NUM_VALUE_-9`*(weightConst)^(`ORDERING_DATE2_-9`) +
                                           `ORD_NUM_VALUE_-10`*(weightConst)^(`ORDERING_DATE2_-10`)) +
-                                          AGE + SEX_C + ETHNIC_GROUP_C + PCP_PROV_ID + PAT_MRN +
+                                          AGE2 + SEX_C + ETHNIC_GROUP_C + PCP_PROV_ID + PAT_MRN +
                                           LNT_OF_STY +
                                           READMT_WITHIN_30_DAYS + ADMT_DIAG + ADMT_MD +
                                           ADMT_NURSS_STTN + ADMT_SRC + ADMT_TYP + PRINC_PROC +
@@ -508,32 +520,32 @@ vnl.knn.flag2 <- train.kknn(formula
                             data = vnl.train, kmax = 200, distance = 1);
 vnl.knn.flag2;
 # Type of response variable: continuous
-# minimal mean absolute error: 0.4733399
-# Minimal mean squared error: 0.2418614
+# minimal mean absolute error: 0.4786949
+# Minimal mean squared error: 0.2439046
 # Best kernel: optimal
-# Best k: 105
+# Best k: 120
 }
 # Attempt with weights on lab value
-vnl.knn.flag2 <- vnl.knn.flag2$fitted.values[[105]][1:356];
+vnl.knn.flag2 <- vnl.knn.flag2$fitted.values[[120]][1:356];
 # Need 1 or 0
 vnl.knn.flag2 <-  vapply(vnl.knn.flag2, FUN = function(x){if (x > flag.cut) 1 else 0}, FUN.VALUE = c(1));
 CM.flag2 <- table(vnl.knn.flag2, vnl.train$INT_FLAG);
 CM.flag2;
 #   vnl.knn.flag2   0   1
-#               0 122  83
-#               1  57  94
+#               0 116  88
+#               1  62  90
 accuracy.flag2 <- (sum(diag(CM.flag2)))/sum(CM.flag2);
-accuracy.flag2; # [1] 0.6067416
+accuracy.flag2; # [1] 0.5786517
 prediction.flag2 <- predict(vnl.knn.flag, vnl.test);
 prediction.flag2 <-  vapply(prediction.flag2, FUN = function(x){if (x > flag.cut) 1 else 0},
                             FUN.VALUE = c(1));
 CM.prediction.flag2 <- table(prediction.flag2, vnl.test$INT_FLAG);
 CM.prediction.flag2;
 #   prediction.flag2  0  1
-#                   0 40 20
-#                   1 10 19
+#                   0 43 18
+#                   1  8 20
 accuracy.prediction.flag2 <- (sum(diag(CM.prediction.flag2)))/sum(CM.prediction.flag2);
-accuracy.prediction.flag2; # [1] 0.6629213
+accuracy.prediction.flag2; # [1] 0.7078652
 # Attempt with weights on lab value is not as good.
 # Plus weightConst was guessed arbitrarily.
 
