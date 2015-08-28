@@ -102,7 +102,9 @@ addORDDATE2 <- function(ListOfDataFrames) {
 
 # Function to start PROPER_TIME for INT_FLAG==0 at some random negative time before 100 days
 startPTIME <- function(ListOfDataFrames, random = 1){
-    # Function to start PROPER_TIME for INT_FLAG==0 at some random negative time before 100 days
+    # Function to start PROPER_TIME for INT_FLAG==0 at
+    # random = 1: some random negative time before 100 days
+    # random = 0: aligns maximum lab value with threshold value
     x <- sample(183:731, length(ListOfDataFrames), replace = F);
     for (j in 1:length(ListOfDataFrames)){
         if (ListOfDataFrames[[j]]$PROPER_TIME[1] == 0 & ListOfDataFrames[[j]]$INT_FLAG[1] == 0){
