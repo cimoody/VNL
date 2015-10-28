@@ -536,9 +536,17 @@ for (i in 1:length(listfiles)) {
     load(file = sprintf("%s%s", dDir, listfiles[i]));
 }
 
+## CSV Table After Time Orderin 10days before threshold
+write.csv(goodDataOrdered10DaysBeforeThreshold,
+          file = "DataTimeOrderedTenDaysBeforeThreshold_VNL.csv",
+          row.names = FALSE, na = "");
+
 ### THIS IS THE SUBSET OF ALL PATIENTS WITH INT_FLAG = 1
 metaPatient <- goodDataOrdered10DaysBeforeThreshold[
     goodDataOrdered10DaysBeforeThreshold$INT_FLAG>0,];
+
+write.csv(metaPatient, file = "DataBeforeLinearRegression_VNL.csv",
+          row.names = FALSE, na = ""); ## CSV Table before Linear Regression
 
 # Sorting into testing and training sets
 n.points <- nrow(metaPatient);
@@ -548,6 +556,10 @@ training <- sample(1:n.points, sampling.rate * n.points, replace = FALSE);
 trainset <- subset(metaPatient[training, ]);
 testing <- setdiff(1:n.points, training);
 testset <- subset(metaPatient[testing, ]);
+
+## CSV Training Data before Linear Regression
+write.csv(trainset, file = "TrainingDataBeforeLinearRegression_VNL.csv",
+          row.names = FALSE, na = "");
 
 ## 3rd linear regression
 reg3 <- lm(`THRESHOLD_TIME` ~ `COMPONENT_ID` + #`INT_FLAG` +

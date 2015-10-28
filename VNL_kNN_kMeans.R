@@ -207,9 +207,14 @@ badcol[is.na(badcol$PCP_PROV_ID),]$PCP_PROV_ID <- replaceNA(badcol$PCP_PROV_ID);
 # Putting this columns back in meta as meta2
 meta2 <- meta;
 meta2[names(badcol)] <- badcol[names(badcol)];
-# Resettin vnl.train and vnl.test with meta2
+# Resetting vnl.train and vnl.test with meta2
 vnl.train <- subset(meta2[training, ]);#, select = c(-INT_FLAG));
 vnl.test <- subset(meta2[testing, ]);#, select = c(-INT_FLAG));
+
+write.csv(meta2, file = "DataBeforeKNNClassifier_VNL.csv",
+          row.names = FALSE, na = ""); ## CSV Table before Classifier
+write.csv(vnl.train, file = "TrainingDataBeforeKNNClassifier_VNL.csv",
+          row.names = FALSE, na = ""); ## CSV Training Data before Classifier
 
 vnl.knn <- train.kknn(formula = formula(`THRESHOLD_TIME` ~ .),
                       data = vnl.train, kmax = 50, distance = 1);
